@@ -3518,7 +3518,7 @@ async fn setup_driver_with_delivered_trip(server: &TestServer, state: &AppState)
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
 }
 
 #[tokio::test]
@@ -3607,7 +3607,7 @@ async fn setup_driver_with_intransit_trip_two_stops(
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
     (token, trip_id)
 }
 
@@ -4623,7 +4623,7 @@ async fn setup_driver_with_three_historical_trips(
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
 }
 
 #[tokio::test]
@@ -4765,7 +4765,7 @@ async fn setup_driver_with_dispatched_load_trip(
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
     (token, trip_id, load_id)
 }
 
@@ -6610,7 +6610,7 @@ async fn create_driver_with_jwt(server: &TestServer, state: &AppState) -> (uuid:
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
     (driver_id, token)
 }
 
