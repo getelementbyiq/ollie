@@ -72,22 +72,16 @@ async fn setup_driver_with_intransit_trip_two_stops(
     state: &AppState,
 ) -> (String, String) {
     let owner_token = setup_owner(server).await;
+    let driver_email = "expense-driver@example.com";
     let driver_id_str = server.post("/fleet/api/v1/drivers")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Expense Driver" }))
+        .json(&serde_json::json!({ 
+            "name": "Expense Driver",
+            "email": driver_email
+        }))
         .await
         .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
     let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-
-    let creds = ollie::models::DriverCredentials {
-        driver_id,
-        pin_hash: None,
-        token_version: 1,
-        failed_pin_attempts: 0,
-        locked_until: None,
-        updated_at: chrono::Utc::now(),
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
 
     let truck_id = server.post("/fleet/api/v1/trucks")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -120,8 +114,15 @@ async fn setup_driver_with_intransit_trip_two_stops(
     let trip_uuid: uuid::Uuid = trip_id.parse().unwrap();
     state.db.transition_trip_status(trip_uuid, ollie::models::TripStatus::InTransit).await.unwrap();
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let token = ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(driver_email, &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    
     (token, trip_id)
 }
 

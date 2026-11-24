@@ -153,9 +153,14 @@ async fn setup_trip_with_internal_notes(server: &TestServer, state: &AppState) -
     state.db.transition_trip_status(trip_uuid, ollie::models::TripStatus::InTransit)
         .await.unwrap();
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let driver_token =
-        ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    let driver_token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
 
     Fixture { owner_token, driver_token, load_id, trip_id }
 }

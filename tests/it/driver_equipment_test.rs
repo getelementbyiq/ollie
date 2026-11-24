@@ -81,17 +81,20 @@ async fn admin_post(server: &TestServer, path: &str, body: serde_json::Value) ->
 }
 
 async fn driver_token(server: &TestServer, state: &AppState, driver_id: &str) -> String {
-    // Set a PIN so credentials (and a token_version) exist.
-    let owner = setup_owner(server).await;
-    server.post(&format!("/fleet/api/v1/drivers/{driver_id}/pin"))
-        .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
-        .json(&serde_json::json!({ "pin": "1234" }))
-        .await;
     let uuid = driver_id.parse::<uuid::Uuid>().unwrap();
-    let creds = state.db.get_driver_credentials(uuid).await.unwrap().unwrap();
-    ollie::api::driver_portal::jwt::encode_driver_jwt(
-        uuid, creds.token_version, &state.config.driver_jwt_secret,
-    ).unwrap()
+    
+    // Get driver email for Firebase login
+    let driver = state.db.get_driver_by_id(uuid).await.unwrap();
+    let email = driver.email.unwrap_or_else(|| format!("test-driver-{}@example.com", uuid));
+    
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(&email, &format!("test-driver-uid-{}", uuid), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
 }
 
 #[tokio::test]

@@ -3511,8 +3511,14 @@ async fn setup_driver_with_delivered_trip(server: &TestServer, state: &AppState)
         .await;
     assert_eq!(depart_delivery.status_code(), 200);
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap()
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
 }
 
 #[tokio::test]
@@ -3594,8 +3600,14 @@ async fn setup_driver_with_intransit_trip_two_stops(
     let trip_uuid: uuid::Uuid = trip_id.parse().unwrap();
     state.db.transition_trip_status(trip_uuid, ollie::models::TripStatus::InTransit).await.unwrap();
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let token = ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
     (token, trip_id)
 }
 
@@ -3733,8 +3745,14 @@ async fn test_driver_stop_detail_includes_scheduled_arrive_utc() {
         .await;
     assert_eq!(dispatch.status_code(), 200);
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let driver_token = ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    let driver_token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
 
     let detail = server.get(&format!("/driver/api/v1/trips/{trip_id}/stops/1"))
         .add_header(header::AUTHORIZATION, format!("Bearer {driver_token}"))
@@ -4220,8 +4238,14 @@ async fn setup_driver_trip_on_load(
     let trip_uuid: uuid::Uuid = trip_id.parse().unwrap();
     state.db.transition_trip_status(trip_uuid, ollie::models::TripStatus::InTransit).await.unwrap();
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let driver_token = ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    let driver_token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
 
     (owner_token, driver_token, load_id, trip_id)
 }
@@ -4592,8 +4616,14 @@ async fn setup_driver_with_three_historical_trips(
             .unwrap();
     }
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap()
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
 }
 
 #[tokio::test]
@@ -4728,8 +4758,14 @@ async fn setup_driver_with_dispatched_load_trip(
         .await;
     assert_eq!(dispatch.status_code(), 200);
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let token = ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
     (token, trip_id, load_id)
 }
 
@@ -6567,8 +6603,14 @@ async fn create_driver_with_jwt(server: &TestServer, state: &AppState) -> (uuid:
         updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let token = ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
     (driver_id, token)
 }
 

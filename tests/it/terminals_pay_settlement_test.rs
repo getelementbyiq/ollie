@@ -84,7 +84,7 @@ use crate::integration_test::{setup_owner, OWNER_EMAIL};
 /// Create a fleet_user account and log in, returning a JWT. Provisioned as
 /// `owner` so these terminal/pay/settlement tests (which write terminals and
 /// settle trips) pass scope enforcement (#331).
-async fn fleet_user_login(server: &TestServer, email: &str, password: &str) -> String {
+async fn fleet_user_login(server: &TestServer, email: &str, _password: &str) -> String {
     // Bootstrap the first-run owner, then create the named user via the users surface.
     // `fleet_manager` is operationally identical to owner (effective scope
     // `["*"]`) but creatable via the users surface (owner is not).
@@ -94,14 +94,15 @@ async fn fleet_user_login(server: &TestServer, email: &str, password: &str) -> S
         .json(&serde_json::json!({
             "email": email,
             "name": "Test Dispatcher",
-            "password": password,
             "role": "fleet_manager"
         }))
         .await;
 
-    // Login and return JWT
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(email, &format!("test-uid-{}", email), None);
     let resp = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": email, "password": password }))
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(resp.status_code(), 200, "fleet_user login failed");
     resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
