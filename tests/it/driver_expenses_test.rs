@@ -24,6 +24,7 @@ async fn setup() -> (TestServer, AppState, TempDir, TempDir) {
     std::env::set_var("FIREBASE_API_KEY", "test-api-key");
     std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
     std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", crate::integration_test::OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -72,12 +73,13 @@ async fn setup_driver_with_intransit_trip_two_stops(
     state: &AppState,
 ) -> (String, String) {
     let owner_token = setup_owner(server).await;
-    let driver_email = "expense-driver@example.com";
+    let temp_id = uuid::Uuid::new_v4();
+    let driver_email = format!("expense-driver-{}@example.com", temp_id);
     let driver_id_str = server.post("/fleet/api/v1/drivers")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({ 
             "name": "Expense Driver",
-            "email": driver_email
+            "email": &driver_email
         }))
         .await
         .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -116,7 +118,7 @@ async fn setup_driver_with_intransit_trip_two_stops(
 
     // Login with Firebase token
     let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
-    let firebase_id_token = fb_helper.sign_id_token(driver_email, &format!("test-driver-uid-{}", driver_id), None);
+    let firebase_id_token = fb_helper.sign_id_token(&driver_email, &format!("test-driver-uid-{}", driver_id), None);
     let login_resp = server.post("/driver/api/v1/auth/login")
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;

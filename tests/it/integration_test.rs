@@ -8654,28 +8654,7 @@ async fn test_users_owner_full_crud() {
     assert_eq!(updated["name"], "Disp Renamed");
     assert_eq!(updated["extra_scopes"][0], "loads:settle");
 
-    // Reset the fleet_manager's password — their old JWT must be invalidated.
-    let fm_token = {
-        let resp = server.post("/fleet/auth/login")
-            .json(&serde_json::json!({ "email": "u_fm@example.com", "password": "pw-fm-one" }))
-            .await;
-        assert_eq!(resp.status_code(), 200);
-        resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
-    };
-    // FM can list users before reset.
-    let pre = server.get("/fleet/api/v1/users")
-        .add_header(header::AUTHORIZATION, format!("Bearer {fm_token}")).await;
-    assert_eq!(pre.status_code(), 200, "fleet_manager can read users");
-
-    let reset = server.put(&format!("/fleet/api/v1/users/{fm_id}/password"))
-        .add_header(header::AUTHORIZATION, &auth)
-        .json(&serde_json::json!({ "password": "pw-fm-new" })).await;
-    assert_eq!(reset.status_code(), 204);
-
-    // Old FM JWT is now invalid (token_version bumped).
-    let post_reset = server.get("/fleet/api/v1/users")
-        .add_header(header::AUTHORIZATION, format!("Bearer {fm_token}")).await;
-    assert_eq!(post_reset.status_code(), 401, "old JWT invalidated after password reset");
+    // Password reset and JWT invalidation testing removed - deprecated with Firebase auth
 
     // Deactivate the fleet_user.
     let del = server.delete(&format!("/fleet/api/v1/users/{disp_id}"))
@@ -8724,8 +8703,10 @@ async fn test_users_fleet_manager_can_manage_but_not_set_owner() {
         "fm_tgt@example.com", "Tgt", "pw-fm-tgt", "dispatcher").await;
 
     let fm = {
+        let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+        let firebase_id_token = fb_helper.sign_id_token("fm_mgr@example.com", "test-uid-fm_mgr@example.com", None);
         let resp = server.post("/fleet/auth/login")
-            .json(&serde_json::json!({ "email": "fm_mgr@example.com", "password": "pw-fm-mgr" })).await;
+            .json(&serde_json::json!({ "id_token": firebase_id_token })).await;
         resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
     };
     let fmauth = format!("Bearer {fm}");
@@ -8854,8 +8835,10 @@ async fn test_users_ownership_transfer() {
 
     // X is owner via login; prior owner is now fleet_manager.
     let x_token = {
+        let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+        let firebase_id_token = fb_helper.sign_id_token("tr_x@example.com", "test-uid-tr_x@example.com", None);
         let r = server.post("/fleet/auth/login")
-            .json(&serde_json::json!({ "email": "tr_x@example.com", "password": "pw-tr-x" })).await;
+            .json(&serde_json::json!({ "id_token": firebase_id_token })).await;
         r.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
     };
     let xauth = format!("Bearer {x_token}");
