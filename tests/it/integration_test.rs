@@ -107,7 +107,7 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
 }
 
 /// Fixed first-run owner credentials used by the dispatch-surface test helpers.
-const OWNER_EMAIL: &str = "owner@example.com";
+pub(crate) const OWNER_EMAIL: &str = "owner@example.com";
 
 /// Returns an owner JWT for the dispatch surface by directly creating a fleet user
 /// in the DB and encoding a JWT. Firebase authentication replaced password-based
@@ -159,9 +159,6 @@ async fn setup_owner_with_db(db: &ollie::db::DbClient) -> String {
 }
 
 /// Legacy wrapper for tests that only have server access
-async fn setup_owner(_server: &axum_test::TestServer) -> String {
-    panic!("setup_owner requires DB access - use test_server_with_state and setup_owner_with_db instead")
-}
 
 /// Insert an additional active `owner` directly into the DB (with credentials).
 /// Used only to set up the otherwise-unreachable two-owner precondition; the
@@ -8339,30 +8336,41 @@ async fn test_mcp_delete_truck_trailer_facility() {
 // ---------------------------------------------------------------------------
 
 /// Create a fleet_user with an explicit role and log in, returning a JWT.
-async fn login_with_role(
+/// Now uses Firebase authentication - creates user via API then logs in with Firebase token.
+pub(crate) async fn login_with_role(
     server: &axum_test::TestServer,
     email: &str,
-    password: &str,
+    _password: &str, // No longer used with Firebase
     role: &str,
 ) -> String {
-    // There is exactly one owner (the first-run bootstrap user). A request for an
-    // `owner` token returns that bootstrap owner directly — the users surface
-    // forbids creating additional owners. Other roles are created normally.
-    let owner = setup_owner(server).await;
+    use crate::common::firebase_test::FirebaseTestHelper;
+    
+    // For owner role, use bootstrap flow
     if role == "owner" {
-        return owner;
+        return setup_owner(server).await;
     }
+    
+    // For other roles: get owner token, create user via API, then login with Firebase
+    let owner = setup_owner(server).await;
+    
     server.post("/fleet/api/v1/users")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
         .json(&serde_json::json!({
-            "email": email, "name": "Scoped User", "password": password, "role": role,
+            "email": email, "name": "Test User", "role": role,
+            "status": "active",
         }))
         .await;
-    let resp = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": email, "password": password }))
+
+    // Login with Firebase token
+    let fb_helper = FirebaseTestHelper::new("test-project");
+    let firebase_id_token = fb_helper.sign_id_token(email, &format!("test-uid-{}", email), None);
+    
+    let login = server.post("/fleet/auth/firebase-login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
-    assert_eq!(resp.status_code(), 200, "login failed for {email}");
-    resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
+    
+    assert_eq!(login.status_code(), 200, "Firebase login failed for {email}");
+    login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
 }
 
 #[tokio::test]

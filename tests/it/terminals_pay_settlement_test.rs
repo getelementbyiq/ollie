@@ -66,24 +66,10 @@ async fn test_server_with_db() -> (TestServer, Arc<DbClient>, TempDir, TempDir) 
     (server, db_handle, blob_dir, db_dir)
 }
 
-const OWNER_EMAIL: &str = "owner@example.com";
 
 /// First-run owner bootstrap (idempotent), returning an owner JWT.
-async fn setup_owner(server: &TestServer) -> String {
-    let resp = server.post("/fleet/setup")
-        .json(&serde_json::json!({
-            "email": OWNER_EMAIL, "name": "Owner", "password": OWNER_PASSWORD,
-        }))
-        .await;
-    if resp.status_code() == 200 {
-        return resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
-    }
-    let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": OWNER_EMAIL, "password": OWNER_PASSWORD }))
-        .await;
-    assert_eq!(login.status_code(), 200, "owner login failed");
-    login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
-}
+// setup_owner now provided by shared integration_test.rs module
+use crate::integration_test::{setup_owner, OWNER_EMAIL};
 
 /// Create a fleet_user account and log in, returning a JWT. Provisioned as
 /// `owner` so these terminal/pay/settlement tests (which write terminals and

@@ -20,6 +20,10 @@ async fn setup() -> (TestServer, AppState, TempDir, TempDir) {
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -52,24 +56,10 @@ async fn setup() -> (TestServer, AppState, TempDir, TempDir) {
     (server, state, blob_dir, db_dir)
 }
 
-const OWNER_EMAIL: &str = "owner@example.com";
 
 /// First-run owner bootstrap (idempotent), returning an owner JWT.
-async fn setup_owner(server: &TestServer) -> String {
-    let resp = server.post("/fleet/setup")
-        .json(&serde_json::json!({
-            "email": OWNER_EMAIL, "name": "Owner", "password": OWNER_PASSWORD,
-        }))
-        .await;
-    if resp.status_code() == 200 {
-        return resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
-    }
-    let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": OWNER_EMAIL, "password": OWNER_PASSWORD }))
-        .await;
-    assert_eq!(login.status_code(), 200, "owner login failed");
-    login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
-}
+// setup_owner now provided by shared integration_test.rs module
+use crate::integration_test::{setup_owner, OWNER_EMAIL};
 
 /// Driver + truck + an assigned, dispatched, InTransit trip with two stops.
 /// Returns (driver_token, trip_id).
@@ -377,6 +367,10 @@ async fn setup_rendezvous_pipeline() -> (TestServer, AppState, TempDir, TempDir,
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
