@@ -134,13 +134,13 @@ async fn test_fleet_api_routes_still_reachable_and_not_rewritten() {
         "no-cache must stay scoped to the SPA assets, not the JSON API",
     );
 
-    // setup/status is unauthenticated and returns JSON — proves the merge order
+    // Firebase config endpoint is unauthenticated and returns JSON — proves the merge order
     // survives and the response isn't the SPA's index.html.
-    let resp = server.get("/fleet/api/v1/setup/status").await;
+    let resp = server.get("/fleet/api/v1/firebase-config").await;
     assert_eq!(resp.status_code(), 200);
     assert!(
         resp.headers().get(header::CONTENT_TYPE).unwrap().to_str().unwrap().contains("json"),
-        "/fleet/setup must return JSON, not the SPA fallback",
+        "/fleet/api/v1/firebase-config must return JSON, not the SPA fallback",
     );
 }
 

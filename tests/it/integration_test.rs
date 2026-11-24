@@ -1498,7 +1498,9 @@ async fn test_get_fleet_user_by_id() {
 
 // --- Dispatcher portal auth tests ---
 
+/// IGNORED: Password-based login removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn test_fleet_user_login_success() {
     let (server, _b, _d, _rx) = test_server().await;
 
@@ -1523,7 +1525,9 @@ async fn test_fleet_user_login_success() {
     assert!(body["token"].as_str().is_some(), "expected a token in response");
 }
 
+/// IGNORED: Password-based login removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn test_fleet_user_login_bad_password() {
     let (server, _b, _d, _rx) = test_server().await;
 
@@ -1544,7 +1548,9 @@ async fn test_fleet_user_login_bad_password() {
     assert_eq!(resp.status_code(), 401);
 }
 
+/// IGNORED: Password-based login removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn test_fleet_user_login_unknown_email() {
     let (server, _b, _d, _rx) = test_server().await;
 
@@ -1555,7 +1561,9 @@ async fn test_fleet_user_login_unknown_email() {
     assert_eq!(resp.status_code(), 401);
 }
 
+/// IGNORED: Password-based refresh tokens removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn test_fleet_user_refresh() {
     let (server, _b, _d, _rx) = test_server().await;
 
@@ -9135,7 +9143,9 @@ async fn test_users_mcp_grant_and_reset_gating() {
 // count_fleet_users() == 0. Creates the first owner and logs them straight in.
 // ---------------------------------------------------------------------------
 
+/// IGNORED: Setup wizard removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn test_setup_wizard_full_flow() {
     let (server, _b, _d, _rx) = test_server().await;
 
@@ -9213,7 +9223,9 @@ async fn test_me_without_auth_returns_401() {
     assert_eq!(resp.status_code(), 401);
 }
 
+/// IGNORED: Setup wizard removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn test_setup_status_false_once_user_exists() {
     let (server, _b, _d, _rx) = test_server().await;
     // Provision the first user via first-run setup; status must then report false.
