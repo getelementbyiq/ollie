@@ -70,20 +70,25 @@ async fn test_server_with_state() -> (
     (server, blob_dir, db_dir, rx, state)
 }
 
-/// Create a dispatcher user via the users API (owner-authenticated) and log in,
+/// Create a dispatcher user via the users API (owner-authenticated) and log in with Firebase,
 /// returning the dispatcher's JWT.
 async fn create_dispatcher_and_login(server: &TestServer, owner: &str) -> String {
+    use crate::common::firebase_test::get_test_firebase_helper;
+    
     let email = "dispatcher@example.com";
-    let password = "dispatcher-password-123";
     let create = server.post("/fleet/api/v1/users")
         .authorization_bearer(owner)
         .json(&serde_json::json!({
-            "email": email, "name": "Dispatcher", "password": password, "role": "dispatcher",
+            "email": email, "name": "Dispatcher", "role": "dispatcher", "status": "active",
         }))
         .await;
     assert_eq!(create.status_code(), 201, "dispatcher create failed");
+    
+    // Login with Firebase token
+    let fb_helper = get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(email, "test-dispatcher-uid", None);
     let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": email, "password": password }))
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login.status_code(), 200, "dispatcher login failed");
     login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
