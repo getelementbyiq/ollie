@@ -337,3 +337,31 @@ async fn test_empty_password_hash_cannot_authenticate() {
     // but won't allow password-based authentication anywhere in the system
     // This is enforced by the hash verification functions that reject empty strings
 }
+
+#[tokio::test]
+async fn test_elearning_rejects_unverified_email() {
+    let (server, _blob, _db) = setup().await;
+    
+    // Create a fleet user
+    let owner = setup_owner(&server).await;
+    let test_email = "unverified@example.com";
+    server.post("/fleet/api/v1/users")
+        .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
+        .json(&serde_json::json!({
+            "email": test_email,
+            "name": "Unverified User",
+            "role": "dispatcher",
+            "status": "active"
+        }))
+        .await;
+    
+    // Try to login with unverified email token
+    let fb_helper = common::firebase_test::get_test_firebase_helper();
+    let unverified_token = fb_helper.sign_unverified_email_token(test_email, "test-sub");
+    
+    let resp = server.post("/elearning/auth/login")
+        .json(&serde_json::json!({ "id_token": unverified_token }))
+        .await;
+    
+    assert_eq!(resp.status_code(), 401, "unverified email must be rejected");
+}

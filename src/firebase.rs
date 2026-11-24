@@ -36,6 +36,9 @@ pub struct FirebaseClaims {
     pub iat: u64,
     /// Expiry
     pub exp: u64,
+    /// Time of authentication
+    #[serde(default)]
+    pub auth_time: Option<u64>,
     /// Optional name
     pub name: Option<String>,
 }
@@ -109,7 +112,47 @@ impl FirebaseAuth {
                 AppError::Unauthorized
             })?;
 
-        Ok(token_data.claims)
+        let claims = token_data.claims;
+        
+        // 4. Additional security checks per Firebase documentation
+        
+        // Email must be present (we map users/drivers by email)
+        if claims.email.is_empty() {
+            tracing::warn!("firebase token rejected: empty email");
+            return Err(AppError::Unauthorized);
+        }
+        
+        // Email must be verified (security: prevent account takeover via unverified email)
+        if !claims.email_verified {
+            tracing::warn!(email = %claims.email, "firebase token rejected: email not verified");
+            return Err(AppError::Unauthorized);
+        }
+        
+        // Subject (uid) must not be empty
+        if claims.sub.is_empty() {
+            tracing::warn!("firebase token rejected: empty sub (uid)");
+            return Err(AppError::Unauthorized);
+        }
+        
+        // Issued-at must not be in the future (allow 5 min clock skew)
+        let now = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        if claims.iat > now + 300 {
+            tracing::warn!(iat = claims.iat, now = now, "firebase token rejected: iat in future");
+            return Err(AppError::Unauthorized);
+        }
+        
+        // Auth-time must not be in the future (if present, allow 5 min clock skew)
+        if let Some(auth_time) = claims.auth_time {
+            if auth_time > now + 300 {
+                tracing::warn!(auth_time = auth_time, now = now, "firebase token rejected: auth_time in future");
+                return Err(AppError::Unauthorized);
+            }
+        }
+
+        Ok(claims)
     }
 
     /// Get a JWK by kid, fetching from Google if needed
@@ -228,6 +271,7 @@ mod tests {
             aud: project_id.to_string(),
             iat: now,
             exp: now + 3600,
+            auth_time: Some(now),
             name: Some("Test User".to_string()),
         };
 
@@ -310,6 +354,7 @@ mod tests {
             aud: project_id.to_string(),
             iat: now - 7200,
             exp: now - 3600, // expired 1 hour ago
+            auth_time: Some(now - 7200),
             name: Some("Test User".to_string()),
         };
 

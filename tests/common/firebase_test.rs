@@ -59,10 +59,39 @@ impl FirebaseTestHelper {
             "aud": self.project_id,
             "iat": now,
             "exp": now + 3600,
+            "auth_time": now,
             "name": email.split('@').next().unwrap_or("Test User"),
         });
 
         // jsonwebtoken requires PKCS#1 DER format for RSA keys
+        let der = self.private_key.to_pkcs1_der().unwrap();
+        let encoding_key = EncodingKey::from_rsa_der(der.as_bytes());
+        
+        encode(&header, &claims, &encoding_key).unwrap()
+    }
+    
+    /// Sign a Firebase ID token with email_verified: false (for testing rejection)
+    pub fn sign_unverified_email_token(&self, email: &str, sub: &str) -> String {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        let mut header = Header::new(Algorithm::RS256);
+        header.kid = Some(self.kid.clone());
+
+        let claims = json!({
+            "email": email,
+            "email_verified": false,  // Unverified email
+            "sub": sub,
+            "iss": format!("https://securetoken.google.com/{}", self.project_id),
+            "aud": self.project_id,
+            "iat": now,
+            "exp": now + 3600,
+            "auth_time": now,
+            "name": email.split('@').next().unwrap_or("Test User"),
+        });
+
         let der = self.private_key.to_pkcs1_der().unwrap();
         let encoding_key = EncodingKey::from_rsa_der(der.as_bytes());
         

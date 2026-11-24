@@ -10229,3 +10229,59 @@ async fn test_manual_dispatch_allows_starting_a_trip_out_of_chain_order() {
     assert_eq!(trip_status(&state, &trip_a_id).await, ollie::models::TripStatus::Assigned,
         "overriding chain order must not disturb the skipped predecessor");
 }
+
+
+#[tokio::test]
+async fn test_fleet_login_rejects_unverified_email() {
+    let (server, _db, _blob, _rx) = test_server().await;
+    
+    // Create a fleet user
+    let owner = setup_owner(&server).await;
+    let test_email = "unverified-fleet@example.com";
+    server.post("/fleet/api/v1/users")
+        .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
+        .json(&serde_json::json!({
+            "email": test_email,
+            "name": "Unverified Fleet User",
+            "role": "dispatcher",
+            "status": "active"
+        }))
+        .await;
+    
+    // Try to login with unverified email token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let unverified_token = fb_helper.sign_unverified_email_token(test_email, "test-sub");
+    
+    let resp = server.post("/fleet/auth/login")
+        .json(&serde_json::json!({ "id_token": unverified_token }))
+        .await;
+    
+    assert_eq!(resp.status_code(), 401, "fleet login must reject unverified email");
+}
+
+#[tokio::test]
+async fn test_driver_login_rejects_unverified_email() {
+    let (server, _db, _blob, _rx, state) = test_server_with_state().await;
+    
+    // Create a driver
+    let owner = setup_owner(&server).await;
+    let test_email = "unverified-driver@example.com";
+    server.post("/fleet/api/v1/drivers")
+        .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
+        .json(&serde_json::json!({
+            "name": "Unverified Driver",
+            "email": test_email
+        }))
+        .await;
+    
+    // Try to login with unverified email token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let unverified_token = fb_helper.sign_unverified_email_token(test_email, "test-sub");
+    
+    let resp = server.post("/driver/api/v1/auth/login")
+        .json(&serde_json::json!({ "id_token": unverified_token }))
+        .await;
+    
+    assert_eq!(resp.status_code(), 401, "driver login must reject unverified email");
+}
+
