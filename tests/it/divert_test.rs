@@ -62,7 +62,6 @@ async fn setup() -> (TestServer, AppState, TempDir, TempDir, async_channel::Rece
 }
 
 const OWNER_EMAIL: &str = "owner@example.com";
-const OWNER_PASSWORD: &str = "owner-password-123";
 
 async fn setup_owner(server: &TestServer) -> String {
     let resp = server.post("/fleet/setup")

@@ -20,6 +20,10 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -64,6 +68,10 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -100,28 +108,59 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
 
 /// Fixed first-run owner credentials used by the dispatch-surface test helpers.
 const OWNER_EMAIL: &str = "owner@example.com";
-const OWNER_PASSWORD: &str = "owner-password-123";
 
-/// Returns an owner JWT for the dispatch surface, performing first-run setup if
-/// needed. Idempotent: the first call runs `POST /fleet/setup` (only legal
-/// while the fleet_user table is empty) and returns the auto-login token; later
-/// calls hit the 409 ("already set up") path and log in with the same creds.
-/// An owner is used so every elevated op (settle/invoice/delete/terminal-writes/
-/// user-mgmt) is permitted. Replaces the old admin `Bearer test-secret` setup.
-async fn setup_owner(server: &axum_test::TestServer) -> String {
-    let resp = server.post("/fleet/setup")
-        .json(&serde_json::json!({
-            "email": OWNER_EMAIL, "name": "Owner", "password": OWNER_PASSWORD,
-        }))
-        .await;
-    if resp.status_code() == 200 {
-        return resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+/// Returns an owner JWT for the dispatch surface by directly creating a fleet user
+/// in the DB and encoding a JWT. Firebase authentication replaced password-based
+/// login, but tests need a simple way to authenticate without Firebase tokens.
+async fn setup_owner_with_db(db: &ollie::db::DbClient) -> String {
+    use ollie::models::{FleetUserRecord, FleetUserStatus, permission::Role};
+    use chrono::Utc;
+    use uuid::Uuid;
+    use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+    use serde::{Serialize, Deserialize};
+    
+    #[derive(Debug, Serialize, Deserialize)]
+    struct FleetClaims {
+        sub: String,
+        email: String,
+        role: String,
+        exp: i64,
+        iat: i64,
     }
-    let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": OWNER_EMAIL, "password": OWNER_PASSWORD }))
-        .await;
-    assert_eq!(login.status_code(), 200, "owner login failed");
-    login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
+    
+    let owner_id = Uuid::new_v4();
+    let now = Utc::now();
+    let owner = FleetUserRecord {
+        id: owner_id,
+        email: OWNER_EMAIL.to_string(),
+        name: "Test Owner".to_string(),
+        role: Role::Owner,
+        status: FleetUserStatus::Active,
+        extra_scopes: Vec::new(),
+        created_at: now,
+        updated_at: now,
+    };
+    
+    // Insert owner into DB (idempotent - ignore if exists)
+    let _ = db.insert_fleet_user(&owner).await;
+    
+    // Generate JWT
+    let secret = std::env::var("FLEET_JWT_SECRET").unwrap();
+    let claims = FleetClaims {
+        sub: owner_id.to_string(),
+        email: OWNER_EMAIL.to_string(),
+        role: "owner".to_string(),
+        exp: (now + chrono::Duration::hours(8)).timestamp(),
+        iat: now.timestamp(),
+    };
+    
+    let key = EncodingKey::from_secret(secret.as_bytes());
+    encode(&Header::new(Algorithm::HS256), &claims, &key).unwrap()
+}
+
+/// Legacy wrapper for tests that only have server access
+async fn setup_owner(_server: &axum_test::TestServer) -> String {
+    panic!("setup_owner requires DB access - use test_server_with_state and setup_owner_with_db instead")
 }
 
 /// Insert an additional active `owner` directly into the DB (with credentials).

@@ -67,7 +67,6 @@ async fn test_server_with_db() -> (TestServer, Arc<DbClient>, TempDir, TempDir) 
 }
 
 const OWNER_EMAIL: &str = "owner@example.com";
-const OWNER_PASSWORD: &str = "owner-password-123";
 
 /// First-run owner bootstrap (idempotent), returning an owner JWT.
 async fn setup_owner(server: &TestServer) -> String {

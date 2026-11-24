@@ -126,7 +126,6 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
 }
 
 const OWNER_EMAIL: &str = "owner@example.com";
-const OWNER_PASSWORD: &str = "owner-password-123";
 
 /// First-run owner bootstrap (idempotent), returning an owner JWT.
 async fn setup_owner(server: &TestServer) -> String {
