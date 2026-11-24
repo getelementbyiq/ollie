@@ -12,12 +12,10 @@ use axum::{Router, routing::{delete as axum_delete, get, post, put}};
 
 pub fn auth_router() -> Router<AppState> {
     Router::new()
-        .route("/auth/challenge", post(auth::challenge))
-        .route("/auth/verify", post(auth::verify))
-        .route("/auth/pin", post(auth::pin_auth))
-        .route("/auth/register-passkey", post(auth::register_passkey))
+        .route("/auth/login", post(auth::login))
         .route("/auth/refresh", post(auth::refresh))
         .route("/auth/logout", post(auth::logout))
+        .route("/firebase-config", get(auth::firebase_config))
 }
 
 pub fn portal_router(state: &AppState) -> Router<AppState> {

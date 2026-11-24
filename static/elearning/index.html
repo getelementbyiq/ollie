@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Диспетчинг траков в США — вся кухня простыми словами | UNDER</title>
+<meta name="description" content="Как работает диспетчинг грузовиков в США: кто есть кто, документы, брокеры, биржи, деньги, репутация MC, мошенничество, глоссарий. Простым языком, на русском.">
+<link rel="icon" href="/_portal/favicon.png">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#f7f7f4;--card:#ffffff;--ink:#1b1d21;--muted:#5d6470;--line:#e3e3dc;--acc:#0f766e;--acc2:#b45309;--accbg:#e6f4f1;--warn:#fff7e6;--warnline:#f1c27d;--bad:#b42318;--badbg:#fdecea;--good:#067647;--goodbg:#e8f6ee;--code:#f1f1ec;--radius:14px;--maxw:860px}
+@media (prefers-color-scheme:dark){:root{--bg:#121416;--card:#1b1e22;--ink:#e8e9ea;--muted:#a0a7b1;--line:#2c3036;--acc:#2dd4bf;--acc2:#f59e0b;--accbg:#12302c;--warn:#2a2213;--warnline:#7a5a1f;--bad:#f97066;--badbg:#341a18;--good:#47cd89;--goodbg:#14291e;--code:#23272c}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+a{color:var(--acc)}
+h1,h2,h3{line-height:1.25}
+h2{font-size:1.6rem;margin:0 0 .6rem}
+h3{font-size:1.15rem;margin:1.4rem 0 .4rem}
+code{background:var(--code);padding:.1em .35em;border-radius:6px;font-size:.92em}
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .in{max-width:1200px;margin:0 auto;padding:.6rem 1rem;display:flex;gap:.8rem;align-items:center}
+.top .sp{flex:1}
+.top b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top button{white-space:nowrap;font:inherit;font-size:.95rem;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:.35rem .8rem;cursor:pointer}
+.layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:260px 1fr;gap:2rem;padding:1rem}
+nav.toc{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 80px);overflow:auto;padding:.5rem 0}
+nav.toc ol{list-style:none;margin:0;padding:0}
+nav.toc li a{display:block;padding:.32rem .7rem;border-radius:9px;color:var(--muted);text-decoration:none;font-size:.95rem}
+nav.toc li a:hover{background:var(--card);color:var(--ink)}
+nav.toc li a.sub{padding-left:1.6rem;font-size:.88rem}
+nav.toc li a.on{background:var(--accbg);color:var(--acc);font-weight:600}
+main{max-width:var(--maxw);min-width:0}
+.hero{background:linear-gradient(135deg,var(--accbg),var(--card));border:1px solid var(--line);border-radius:22px;padding:2rem 1.6rem;margin-bottom:1.5rem}
+.hero h1{font-size:2.1rem;margin:0 0 .5rem}
+.hero p{margin:.4rem 0;color:var(--muted);font-size:1.08rem}
+.pill{display:inline-block;font-size:.8rem;font-weight:600;color:var(--acc);background:var(--card);border:1px solid var(--line);border-radius:99px;padding:.15rem .7rem;margin-bottom:.8rem}
+section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem 1.4rem;margin:0 0 1.2rem}
+.num{display:inline-flex;width:2rem;height:2rem;border-radius:50%;background:var(--acc);color:var(--card);align-items:center;justify-content:center;font-size:1rem;margin-right:.5rem;vertical-align:.1em}
+.kid{background:var(--warn);border:1px dashed var(--warnline);border-radius:12px;padding:.8rem 1rem;margin:.9rem 0}
+.kid::before{content:"🧸 Для пятилетнего: ";font-weight:700}
+.real{border-left:4px solid var(--acc);padding:.3rem .9rem;margin:.6rem 0;background:var(--accbg);border-radius:0 10px 10px 0}
+.real::before{content:"По-настоящему: ";font-weight:700;color:var(--acc)}
+.warnbox{background:var(--badbg);border-left:4px solid var(--bad);padding:.7rem 1rem;border-radius:0 10px 10px 0;margin:.8rem 0}
+.goodbox{background:var(--goodbg);border-left:4px solid var(--good);padding:.7rem 1rem;border-radius:0 10px 10px 0;margin:.8rem 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;margin:.8rem 0}
+.card{border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;background:var(--bg)}
+.card h4{margin:0 0 .3rem;font-size:1.02rem}
+.card p{margin:0;font-size:.95rem;color:var(--muted)}
+.emoji{font-size:1.5rem;display:block;margin-bottom:.2rem}
+table{border-collapse:collapse;width:100%;font-size:.95rem;margin:.6rem 0}
+.tw{overflow-x:auto}
+th,td{border-bottom:1px solid var(--line);padding:.5rem .55rem;text-align:left;vertical-align:top}
+th{background:var(--bg);font-weight:600}
+ol.steps{counter-reset:s;list-style:none;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:.2rem 0 .9rem 2.8rem;border-left:2px solid var(--line);margin-left:1rem}
+ol.steps>li::before{content:counter(s);position:absolute;left:-1.05rem;top:0;width:2rem;height:2rem;border-radius:50%;background:var(--acc);color:var(--card);display:flex;align-items:center;justify-content:center;font-weight:700}
+ol.steps>li:last-child{border-left-color:transparent}
+.script{background:var(--code);border-radius:12px;padding:.8rem 1rem;margin:.7rem 0}
+.script .en{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.93rem;white-space:pre-wrap}
+.script .ru{color:var(--muted);font-size:.93rem;margin-top:.4rem}
+.who{font-weight:700;color:var(--acc2)}
+.calc{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92rem;background:var(--code);border-radius:12px;padding:.9rem 1rem;white-space:pre-wrap;overflow-x:auto}
+.check{padding-left:.2rem}
+.check li{list-style:none;margin:.3rem 0}
+.check input{margin-right:.5rem;transform:scale(1.15)}
+.gl-tools{display:flex;gap:.5rem;margin:.6rem 0 1rem}
+.gl-tools input{flex:1;min-width:200px;font:inherit;padding:.6rem .9rem;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.letters{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.8rem}
+.letters button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:.15rem .5rem;cursor:pointer}
+.letters button.on{background:var(--acc);color:var(--card);border-color:var(--acc)}
+dl.gl .t{border-bottom:1px solid var(--line);padding:.65rem 0}
+dl.gl dt{font-weight:700}
+dl.gl dt small{font-weight:400;color:var(--muted)}
+dl.gl dd{margin:.15rem 0 0}
+.count{color:var(--muted);font-size:.9rem}
+.src li{margin:.35rem 0;word-break:break-word}
+.disc{font-size:.92rem;color:var(--muted)}
+footer{max-width:1200px;margin:0 auto;padding:1rem 1rem 3rem;color:var(--muted);font-size:.9rem;text-align:center}
+.diagram{width:100%;min-width:620px;height:auto;display:block;margin:.6rem 0}
+.dwrap{overflow-x:auto}
+.tag{display:inline-block;font-size:.75rem;padding:.05rem .5rem;border-radius:99px;background:var(--accbg);color:var(--acc);font-weight:600}
+.tocbtn{display:none}
+@media (max-width:900px){.layout{grid-template-columns:1fr;padding:.7rem}nav.toc{display:none;position:fixed;top:54px;left:0;right:0;bottom:0;max-height:none;background:var(--bg);z-index:30;padding:1rem}nav.toc.open{display:block}.top .tocbtn{display:inline-block}.hero{padding:1.4rem 1.1rem}.hero h1{font-size:1.6rem}section{padding:1.15rem 1rem}body{font-size:16.5px}}
+@media (max-width:600px){
+.tw table.st,.tw table.st tbody,.tw table.st tr,.tw table.st td{display:block;width:100%}
+.tw table.st tr.hd{display:none}
+.tw table.st tr{border-bottom:2px solid var(--line);padding:.5rem 0}
+.tw table.st td{border:0;padding:.15rem .2rem}
+.tw table.st td:first-child{font-size:1.05rem}
+.tw table.st td[data-label]:not(:first-child)::before{content:attr(data-label) ": ";font-weight:600;color:var(--muted);font-size:.85rem}
+.tw table.st th[colspan]{display:block;border-radius:8px;margin-top:.6rem}
+}
+@media print{.top,nav.toc{display:none}.layout{display:block}}
+.btnp{font:inherit;font-size:.95rem;border:1px solid var(--line);background:var(--accbg);color:var(--acc);border-radius:10px;padding:.4rem .9rem;cursor:pointer;font-weight:600}
+#onb h4{margin:.9rem 0 .2rem}
+.onlyprint{display:none}
+th[colspan]{background:var(--accbg);color:var(--acc)}
+@media print{body.p-onb .top,body.p-onb nav.toc,body.p-onb header.hero,body.p-onb footer,body.p-onb main>section:not(#s3){display:none!important}
+body.p-onb #s3>*:not(#onb):not(#s3f){display:none!important}
+body.p-onb #s3{border:0;padding:0}
+body.p-onb .onlyprint{display:block}
+body{background:#fff;color:#000}section{border:0}}
+
+</style>
+</head>
+<body>
+<div class="top"><div class="in"><b>🚚 Диспетчинг: вся кухня</b><span class="sp"></span><button class="tocbtn" id="tocbtn" aria-expanded="false" aria-controls="toc">☰ Оглавление</button></div></div>
+<div class="layout">
+<nav class="toc" id="toc" aria-label="Оглавление"><ol>
+<li><a href="#s1">1. Картина целиком</a></li>
+<li><a href="#s2">2. День из жизни груза</a></li>
+<li><a href="#s3">3. Кто что должен иметь</a></li>
+<li><a href="#s3a" class="sub">3A · Нам (диспетчеру)</a></li>
+<li><a href="#s3b" class="sub">3B · Перевозчику</a></li>
+<li><a href="#s3c" class="sub">3C · Анкета онбординга</a></li>
+<li><a href="#s3d" class="sub">3D · Каждый рейс</a></li>
+<li><a href="#s3e" class="sub">3E · В ollie</a></li>
+<li><a href="#s3f" class="sub">3F · Чеклист</a></li>
+<li><a href="#s4">4. Подключение к брокеру</a></li>
+<li><a href="#s5">5. Биржи и выбор груза</a></li>
+<li><a href="#s6">6. Переговоры с брокером</a></li>
+<li><a href="#s7">7. Деньги</a></li>
+<li><a href="#s8">8. Репутация MC</a></li>
+<li><a href="#s9">9. Риски и мошенничество</a></li>
+<li><a href="#s10">10. Как у нас: Бишкек + ollie</a></li>
+<li><a href="#s11">11. Первые шаги (чеклист)</a></li>
+<li><a href="#s12">12. Ошибки новичков</a></li>
+<li><a href="#s13">13. Глоссарий A–Z</a></li>
+<li><a href="#s14">14. Источники</a></li>
+</ol></nav>
+<main>
+<header class="hero">
+<span class="pill">UNDER · учебный гид</span>
+<h1>Диспетчинг траков в США: вся кухня простыми словами</h1>
+<p>Кто везёт, кто платит, какие нужны бумаги, как найти хороший груз, как получить свои деньги и как не попасть на мошенников. Объясняем так, чтобы понял даже пятилетний. Но после каждой простой картинки идёт и настоящее объяснение.</p>
+<p class="disc">⚠️ Это учебный обзор, а не юридическая, налоговая или страховая консультация. Правила FMCSA и требования брокеров меняются, поэтому перед важными решениями сверяйся с первоисточниками (они в <a href="#s14">разделе 14</a>). Цифры с пометкой «пример» придуманы только для того, чтобы показать расчёт.</p>
+</header>
+<section id="s1">
+<h2><span class="num">1</span>Картина целиком: кто есть кто</h2>
+<div class="kid">Представь, что у тёти в магазине кончились игрушки. На фабрике игрушки есть, но везти их некому. Есть дядя с большой машиной, но он не знает, где ждут груз. Тогда есть посредник, который знает и фабрику, и тётю, и есть твой помощник, который всё время ищет дяде с машиной хорошие поездки. Этот помощник и есть <b>диспетчер</b>, то есть ты.</div>
+<div class="grid">
+<div class="card"><span class="emoji">🏭</span><h4>Shipper (грузоотправитель)</h4><p>Компания, у которой есть товар, например завод или склад. Ей нужно куда-то отправить груз.</p></div>
+<div class="card"><span class="emoji">🏬</span><h4>Receiver / Consignee (получатель)</h4><p>Тот, кто принимает груз: магазин, склад, дистрибьютор.</p></div>
+<div class="card"><span class="emoji">🤝</span><h4>Broker (брокер)</h4><p>Посредник с лицензией FMCSA. Берёт груз у шиппера, находит перевозчика и зарабатывает на разнице в цене.</p></div>
+<div class="card"><span class="emoji">🚛</span><h4>Carrier (перевозчик)</h4><p>Компания с траком и разрешением возить грузы за деньги (номера USDOT и MC).</p></div>
+<div class="card"><span class="emoji">👤</span><h4>Owner-operator</h4><p>Водитель, у которого свой трак и часто своя компания. Это маленький перевозчик из одного человека.</p></div>
+<div class="card"><span class="emoji">🎧</span><h4>Dispatcher (диспетчер)</h4><p>Работает на перевозчика: ищет грузы, торгуется с брокерами, ведёт бумаги и следит за рейсом. Получает процент.</p></div>
+<div class="card"><span class="emoji">🏦</span><h4>Factoring (факторинг)</h4><p>Компания, которая сразу выкупает счёт перевозчика к брокеру за комиссию, чтобы перевозчик не ждал оплату неделями.</p></div>
+<div class="card"><span class="emoji">🏛️</span><h4>FMCSA</h4><p>Федеральное агентство США по безопасности грузоперевозок. Выдаёт номера и следит, чтобы все соблюдали правила.</p></div>
+</div>
+<h3>Схема: куда едет груз и куда идут деньги</h3>
+<div class="dwrap"><svg class="diagram" viewBox="0 0 820 380" role="img" aria-label="Схема: груз идёт от шиппера к получателю на траке перевозчика; деньги идут от шиппера к брокеру, от брокера к перевозчику, от перевозчика процент диспетчеру">
+<defs>
+<marker id="ag" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="9" refY="5" viewBox="0 0 10 10" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0f766e"/></marker>
+<marker id="am" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="9" refY="5" viewBox="0 0 10 10" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker>
+<marker id="ai" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="9" refY="5" viewBox="0 0 10 10" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+</defs>
+<g font-size="15" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto,Arial,sans-serif">
+<rect x="20" y="30" width="160" height="70" rx="14" fill="#e6f4f1" stroke="#0f766e"/><text x="100" y="60" fill="#0b3b37" font-weight="700">🏭 Shipper</text><text x="100" y="82" fill="#0b3b37" font-size="12">есть товар</text>
+<rect x="330" y="30" width="160" height="70" rx="14" fill="#fff4e0" stroke="#b45309"/><text x="410" y="60" fill="#5a3008" font-weight="700">🤝 Broker</text><text x="410" y="82" fill="#5a3008" font-size="12">посредник</text>
+<rect x="640" y="30" width="160" height="70" rx="14" fill="#e6f4f1" stroke="#0f766e"/><text x="720" y="60" fill="#0b3b37" font-weight="700">🏬 Receiver</text><text x="720" y="82" fill="#0b3b37" font-size="12">получатель</text>
+<rect x="330" y="200" width="160" height="70" rx="14" fill="#eef2ff" stroke="#4f46e5"/><text x="410" y="230" fill="#1e1b4b" font-weight="700">🚛 Carrier</text><text x="410" y="252" fill="#1e1b4b" font-size="12">трак + водитель</text>
+<rect x="20" y="290" width="200" height="70" rx="14" fill="#f1f5f9" stroke="#64748b"/><text x="120" y="320" fill="#0f172a" font-weight="700">🎧 Dispatcher (ты)</text><text x="120" y="342" fill="#0f172a" font-size="12">работает на перевозчика</text>
+<rect x="600" y="290" width="200" height="70" rx="14" fill="#f1f5f9" stroke="#64748b"/><text x="700" y="320" fill="#0f172a" font-weight="700">🏦 Factoring</text><text x="700" y="342" fill="#0f172a" font-size="12">по желанию перевозчика</text>
+</g>
+<g font-family="system-ui,Segoe UI,Roboto,Arial,sans-serif" font-size="12" text-anchor="middle">
+<path d="M180,55 L326,55" stroke="#b45309" stroke-width="3" fill="none" marker-end="url(#am)"/><text x="253" y="44" fill="#b45309">💵 платит брокеру</text>
+<path d="M410,102 L410,196" stroke="#b45309" stroke-width="3" fill="none" marker-end="url(#am)"/><text x="402" y="150" fill="#b45309" text-anchor="end">💵 платит по rate con</text>
+<path d="M330,250 L190,300" stroke="#b45309" stroke-width="3" fill="none" marker-end="url(#am)"/><text x="232" y="262" fill="#b45309">💵 % диспетчеру</text>
+<path d="M100,102 C100,180 250,235 326,235" stroke="#0f766e" stroke-width="3" stroke-dasharray="7 5" fill="none" marker-end="url(#ag)"/><text x="92" y="160" fill="#0f766e" text-anchor="end">📦 забирает</text><text x="92" y="176" fill="#0f766e" text-anchor="end">груз</text>
+<path d="M494,235 C600,235 720,180 720,104" stroke="#0f766e" stroke-width="3" stroke-dasharray="7 5" fill="none" marker-end="url(#ag)"/><text x="712" y="215" fill="#0f766e" text-anchor="start">📦 привозит груз</text>
+<path d="M160,290 C220,170 290,120 340,104" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#ai)"/><text x="150" y="276" fill="#64748b" text-anchor="end">📞 торгуется</text>
+<path d="M494,262 L600,308" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#ai)" stroke-dasharray="3 4"/><text x="565" y="270" fill="#64748b">продаёт счёт</text>
+</g>
+</svg></div>
+<p class="disc">На телефоне схему можно листать вбок. Зелёный пунктир: путь груза. Оранжевый: путь денег. Серый: разговоры и бумаги.</p>
+<div class="real">Шиппер платит брокеру. Брокер платит перевозчику ту сумму, которая записана в <b>rate confirmation</b> (подтверждении ставки). Сам перевозчик платит диспетчеру его процент по <b>договору на диспетчерские услуги</b>. Диспетчер не владеет ни грузом, ни траком. Он работает агентом перевозчика: ищет, договаривается, оформляет и следит.</div>
+<h3>Важно: диспетчер ≠ брокер</h3>
+<p>В 2023 году FMCSA выпустила официальное разъяснение, где проходит граница между диспетчером и брокером. Если коротко, диспетчер может работать без брокерской лицензии, только если он <b>bona fide agent</b> («настоящий агент») перевозчика:</p>
+<ul>
+<li>есть <b>письменный постоянный договор</b>, в котором перевозчик назначает тебя своим агентом;</li>
+<li>платит тебе <b>перевозчик</b>, а не брокер и не шиппер;</li>
+<li>ты не распределяешь один груз между разными перевозчиками и не предлагаешь грузы «всем подряд»;</li>
+<li>ты не принимаешь и не пропускаешь через себя деньги за перевозку между шиппером, брокером и перевозчиком.</li>
+</ul>
+<div class="warnbox">Если ты сам берёшь грузы у шипперов, раздаёшь их разным перевозчикам или собираешь оплату за фрахт, ты уже фактически работаешь брокером, а для этого нужна брокерская лицензия и залог (bond) $75 000. Источники: <a href="https://www.federalregister.gov/documents/2023/06/16/2023-13080/definitions-of-broker-and-bona-fide-agents" target="_blank" rel="noopener">Federal Register, 16.06.2023</a>, <a href="https://www.fmcsa.dot.gov/registration/insurance-filing-requirements" target="_blank" rel="noopener">FMCSA Insurance Filing Requirements</a>. Как это применить именно к тебе, лучше уточнить у юриста по транспорту США.</div>
+</section>
+
+<section id="s2">
+<h2><span class="num">2</span>День из жизни груза: шаг за шагом</h2>
+<div class="kid">Сначала ищем, кому нужно что-то отвезти. Договариваемся, сколько за это заплатят. Едем, забираем, везём, отдаём. Получаем бумажку, что всё привезли. По этой бумажке нам платят.</div>
+<ol class="steps">
+<li><b>Трак свободен.</b> Водитель скоро разгрузится, например завтра в 10:00 в Далласе (TX). Ты узнаёшь у него: где он будет, сколько у него часов по HOS, куда он хочет ехать дальше (домой или в любое место) и какой у него трейлер.</li>
+<li><b>Поиск груза.</b> Ищешь на бирже (DAT, Truckstop) грузы рядом с точкой разгрузки, то есть с небольшим <b>deadhead</b>. Смотришь ставку, мили, вес, даты, тип трейлера и рейтинг брокера (кредит, сколько дней до оплаты).</li>
+<li><b>Звонок брокеру.</b> Уточняешь детали (вес, адреса, время, нужен ли lumper, есть ли tarps или straps) и торгуешься о ставке (см. <a href="#s6">раздел 6</a>).</li>
+<li><b>Carrier packet.</b> Если перевозчик у этого брокера в первый раз, брокер проверяет его через сервисы вроде Highway или RMIS. Нужны MC, W-9, страховой сертификат (COI) и реквизиты.</li>
+<li><b>Rate Confirmation.</b> Брокер присылает rate con, то есть договор на этот конкретный груз: ставка, адреса, время, номера (PO, pickup #), правила и штрафы. Ты <b>читаешь его целиком</b>, проверяешь, что всё совпадает с договорённостью, получаешь согласие перевозчика и подписываешь.</li>
+<li><b>Dispatch водителю.</b> Отправляешь водителю всё нужное: адреса, время appointment, номера, особые требования. Сразу заносишь груз в TMS (у нас это ollie).</li>
+<li><b>Pickup (погрузка).</b> Водитель приезжает и отмечается (check-in). Его грузят, он проверяет груз, считает паллеты и смотрит пломбу (seal). Подписывает <b>BOL</b> и фотографирует его.</li>
+<li><b>В пути: check calls.</b> Ты сообщаешь брокеру, где трак и какой у него ETA. Если опаздываешь, говоришь об этом <b>заранее</b>. Ждёшь дольше бесплатного времени? Тогда фиксируешь время прибытия и убытия, чтобы получить <b>detention</b>.</li>
+<li><b>Delivery (разгрузка).</b> Получатель подписывает BOL. Документ с подписью получателя называется <b>POD</b> (доказательство доставки). Водитель сразу присылает чёткое фото или скан.</li>
+<li><b>Инвойс.</b> Перевозчик (или факторинг) выставляет брокеру счёт: invoice + rate con + POD. Можно ждать оплаты по обычным условиям, взять quick pay или продать счёт факторингу.</li>
+<li><b>Оплата.</b> Брокер платит перевозчику. После этого перевозчик платит тебе процент по договору, обычно раз в неделю по выписке.</li>
+<li><b>Следующий груз.</b> В идеале ты ищешь его ещё до разгрузки текущего, чтобы трак не стоял пустым.</li>
+</ol>
+</section>
+
+<section id="s3">
+<h2><span class="num">3</span>Кто что должен иметь: мы, перевозчик, водитель</h2>
+<div class="kid">Чтобы играть в «почту», нужны три вещи. У почтальона (водителя) должны быть права и машина. У почты (перевозчика) должно быть разрешение и страховка. А у помощника, который подбирает письма для доставки (у тебя, диспетчера), должны быть телефон, договор с почтой и тетрадка, где всё записано. И прежде чем начать, помощник спрашивает у почты: «Какая у вас машина? Куда вы любите ездить? Куда платить?»</div>
+<div class="real">Почти все разрешения, страховки и налоги в грузоперевозках США оформляются на <b>перевозчика</b> (carrier), а не на диспетчера. FMCSA не выдаёт диспетчерам отдельную лицензию. Твоя задача: работать <b>законно как агент</b>, собрать у перевозчика полный пакет данных и документов, проверить его и вести всё аккуратно в ollie.</div>
+<div class="grid">
+<div class="card"><h4><a href="#s3a">3A · Что нужно нам</a></h4><p>Компания, договор, доверенность, налоговая форма, деньги, телефон, почта, биржа, TMS.</p></div>
+<div class="card"><h4><a href="#s3b">3B · Что у перевозчика</a></h4><p>Что обязательно по закону, а что требуют брокеры.</p></div>
+<div class="card"><h4><a href="#s3c">3C · Анкета онбординга</a></h4><p>Что спросить и собрать до первого груза, и как проверить перевозчика.</p></div>
+<div class="card"><h4><a href="#s3d">3D · Каждый рейс</a></h4><p>Что водитель присылает по каждому грузу.</p></div>
+<div class="card"><h4><a href="#s3e">3E · Куда в ollie</a></h4><p>В какие поля и разделы всё записывать.</p></div>
+<div class="card"><h4><a href="#s3f">3F · Чеклист для печати</a></h4><p>Галочки сохраняются, можно распечатать.</p></div>
+</div>
+
+<h3 id="s3a">3A. Что нужно нам, диспетчеру из Кыргызстана</h3>
+<div class="kid">Перед тем как помогать чужой почте, тебе нужны свой «кабинет» (компания), бумага от почты, что ты её помощник (договор и доверенность), и кошелёк, куда тебе будут платить.</div>
+<div class="tw"><table>
+<tr><th>Что</th><th>Как это работает</th><th>Уверенность</th></tr>
+<tr><td><b>Юрлицо: ИП в КР</b></td><td>Закон США не требует, чтобы у диспетчера была американская компания. FMCSA диспетчеров не лицензирует. Значит, работать через кыргызское ИП можно со стороны США, если ты действуешь как <b>bona fide agent</b> (см. ниже). Как платить налоги с валютной выручки, какой режим ИП выбрать и нужен ли патент, решает кыргызское право. Это уточни у бухгалтера в КР.</td><td><span class="tag">США: проверено</span> <span class="tag">КР: уточнить</span></td></tr>
+<tr><td><b>Bona fide agent вместо брокерской лицензии</b></td><td>По разъяснению FMCSA 2023 года диспетчеру <b>не нужна</b> брокерская лицензия (MC брокера + bond $75 000), если: 1) есть письменный постоянный договор с перевозчиком; 2) платит тебе только перевозчик; 3) ты не берёшь деньги от шиппера или брокера и не держишь у себя деньги за фрахт; 4) ты не раздаёшь один груз разным перевозчикам и не выставляешь грузы на «открытый рынок».<br><b>Брокерская лицензия нужна</b>, если ты сам берёшь грузы у шипперов и ищешь им перевозчика, получаешь оплату за фрахт или распределяешь грузы между несколькими перевозчиками.</td><td><span class="tag">Federal Register 2023</span></td></tr>
+<tr><td><b>Договор с перевозчиком</b> (Dispatch Service Agreement)</td><td>Что в нём должно быть: стороны (твоё ИП и компания перевозчика с MC/DOT); назначение тебя агентом перевозчика; список услуг (поиск грузов, переговоры, бумаги, check calls) и чего ты <b>не</b> делаешь (не принимаешь оплату за фрахт, не отвечаешь за груз и не являешься брокером). Также: процент и база расчёта (gross или line-haul), когда и как ты выставляешь счёт (например, каждую неделю за доставленные грузы) и способ оплаты; правило согласования грузов (каждый груз одобряет перевозчик, или условия: мин. RPM, регионы); минимальные требования (страховка, исправная техника, ELD); конфиденциальность; срок и порядок расторжения; кто владеет аккаунтами (биржа, email) и что с ними при выходе; применимое право и порядок споров. Готовый шаблон лучше показать юристу.</td><td><span class="tag">практика</span></td></tr>
+<tr><td><b>Доверенность от перевозчика</b> (Letter of Authority / Limited Power of Attorney)</td><td>Короткое письмо на бланке перевозчика, подписанное владельцем: «Компания X (MC…, DOT…) уполномочивает [ты / твоё ИП] вести переговоры о ставках и подписывать rate confirmation от нашего имени». Многие брокеры просят такое письмо при первом звонке от диспетчера. Делай его <b>ограниченным</b>, только на переговоры и подпись rate con, без права менять банковские данные и данные в FMCSA.</td><td><span class="tag">практика брокеров</span></td></tr>
+<tr><td><b>Налоговая форма: не W-9</b></td><td>W-9 заполняют только американские лица (US persons). Ты иностранец, поэтому американскому плательщику (перевозчику), который попросит налоговую форму, отдаёшь форму серии <b>W-8</b>. Для ИП (это физлицо-предприниматель) обычно подходит <b>W-8BEN</b>, для юрлица (например, ОсОО) — <b>W-8BEN-E</b>. Форма не отправляется в IRS, её отдают тому, кто платит. По объяснению IRS, услуги, оказанные <b>за пределами США</b>, обычно не считаются доходом из американского источника и не облагаются удержанием 30%. Детали проверь с налоговым консультантом.</td><td><span class="tag">IRS</span> <span class="tag">уточнить</span></td></tr>
+<tr><td><b>Как получать деньги</b></td><td>Варианты: 1) <b>Payoneer</b>: по обзорам, принимает бизнес из КР и даёт реквизиты для приёма USD (одобрение индивидуально); 2) <b>валютный счёт в банке КР</b> через SWIFT (смотри комиссии и вопросы валютного контроля); 3) <b>Wise</b>: по сторонним обзорам, Wise Business для компаний из КР <b>недоступен</b>, проверь на wise.com; 4) <b>американская LLC</b>: иностранец может её открыть, но тогда появляются обязанности в США (например, ежегодная отчётность иностранной LLC с одним владельцем) и сложности с банковским счётом. Это шаг для потом, с бухгалтером. ACH и Zelle работают только внутри США, поэтому на счёт в КР перевозчику придётся платить международным переводом (wire) или через сервис вроде Payoneer. Заранее договорись о способе и запиши его в договор.</td><td><span class="tag">уточнить на сайтах сервисов</span></td></tr>
+<tr><td><b>Американский номер телефона</b></td><td>Брокеры звонят и пишут SMS на номера США. Нужен стабильный номер США, который не меняется, с голосом и SMS. Сервисы проверки (Highway и др.) оценивают прежде всего <b>контакты перевозчика</b>, и номер-«виртуалка» там выглядит подозрительно. Для диспетчера VoIP обычно приемлем, но держи один постоянный номер. <b>Никогда не меняй контакты в SAFER/FMCSA перевозчика на свои</b>: для брокеров это выглядит как захват MC.</td><td><span class="tag">практика</span> <span class="tag">не закон</span></td></tr>
+<tr><td><b>Профессиональная почта</b></td><td>Email на своём домене (например, <code>urmat@твой-домен</code>), с подписью: имя, «Dispatcher for [Carrier], MC…», телефон. Gmail-адреса брокеры часто считают признаком мошенника. Включи 2FA.</td><td><span class="tag">практика</span></td></tr>
+<tr><td><b>Биржа грузов (DAT / Truckstop)</b></td><td><b>DAT</b> (по его страницам): все пользователи должны работать под чьей-то authority. Независимый диспетчер получает доступ как <b>seat</b> (место) в аккаунте перевозчика, аккаунт и подписка принадлежат перевозчику. Отдельный аккаунт «verified dispatcher» требует <b>места ведения бизнеса в США</b>, присутствия в интернете и <b>больше одного</b> подтверждённого MC перевозчика. Каждый MC может быть привязан только к одному диспетчеру, а связь подтверждается каждые 3 месяца. Значит, из Бишкека на старте самый реальный путь — это seat в аккаунте перевозчика. <b>Truckstop</b>: по сторонним обзорам, аккаунт тоже оформляется на MC перевозчика с отдельным пользователем для диспетчера. Уточни в Truckstop.</td><td><span class="tag">DAT: проверено</span> <span class="tag">Truckstop: уточнить</span></td></tr>
+<tr><td><b>TMS: ollie</b></td><td>Наш журнал всего: перевозчики, траки, водители, грузы, документы, check calls. Адрес: <a href="https://dispatch.under.kg" target="_blank" rel="noopener">dispatch.under.kg</a> (см. <a href="#s3e">3E</a>).</td><td>—</td></tr>
+<tr><td><b>CRM брокеров</b></td><td>Список брокеров: с кем работали, контакты, по каким направлениям, как быстро платят, были ли проблемы. Для начала хватит таблицы; потом можно перенести.</td><td><span class="tag">практика</span></td></tr>
+<tr><td><b>Страховка диспетчера</b> (E&amp;O, General Liability)</td><td>Закон США её для диспетчера не требует. Страховка ошибок (Errors &amp; Omissions) может защитить от претензий за ошибку в работе. На старте это по желанию; некоторые крупные перевозчики могут её попросить.</td><td><span class="tag">по желанию</span></td></tr>
+<tr><td><b>График и часовые пояса</b></td><td>Основная работа идёт вечером и ночью по Бишкеку (см. <a href="#s10">раздел 10</a>). В договоре укажи часы, когда ты на связи, и кто отвечает за ночные проблемы водителя.</td><td>—</td></tr>
+</table></div>
+<h3 id="s3b">3B. Что должно быть у перевозчика и водителя</h3>
+<div class="kid">Есть правила, которые придумало государство: без них ездить нельзя, и полиция может остановить. А есть правила, которые придумал брокер: без них он просто не даст груз. Нам нужно и то, и другое.</div>
+<p><span class="tag">Закон</span> обязательно по правилам FMCSA, IRS или штатов. <span class="tag">Брокеры</span> не закон, но без этого грузов почти не будет. Пороги веса указаны как в официальных источниках.</p>
+<div class="tw"><table>
+<tr><th>Что</th><th>Простыми словами</th><th>Кто требует</th><th>Где проверить</th></tr>
+<tr><td><b>USDOT number</b></td><td>Номер компании в FMCSA, «паспорт безопасности». По нему видны инспекции и аварии.</td><td><span class="tag">Закон</span></td><td>SAFER / QCMobile</td></tr>
+<tr><td><b>MC (operating authority)</b>, активная</td><td>Разрешение возить чужие грузы за деньги между штатами. Статус должен быть <b>ACTIVE</b>, не «pending», «inactive» или «revoked».</td><td><span class="tag">Закон</span></td><td>SAFER, L&amp;I</td></tr>
+<tr><td>«Возраст» MC</td><td>Сколько месяцев authority активна. Многие брокеры не берут совсем новые MC; порог у каждого свой.</td><td><span class="tag">Брокеры</span></td><td>L&amp;I (дата выдачи)</td></tr>
+<tr><td><b>BOC-3</b></td><td>Агенты по штатам для приёма судебных бумаг. Без него authority не выдадут; если он пропадёт, FMCSA начнёт её отзывать.</td><td><span class="tag">Закон</span></td><td>L&amp;I</td></tr>
+<tr><td><b>UCR</b></td><td>Ежегодная регистрация и сбор; размер зависит от числа траков.</td><td><span class="tag">Закон</span></td><td>ucr.gov</td></tr>
+<tr><td><b>MCS-150</b> актуальный</td><td>Обновление данных раз в 24 месяца. Пропустил, и USDOT деактивируют.</td><td><span class="tag">Закон</span></td><td>SAFER (MCS-150 Form Date)</td></tr>
+<tr><td><b>Auto liability (BIPD)</b></td><td>Страховка ущерба другим. Минимум по закону для обычного груза на траке от 10 001 lbs — <b>$750 000</b>; для траков легче — $300 000. Брокеры обычно хотят <b>$1 000 000</b>.</td><td><span class="tag">Закон</span> + <span class="tag">Брокеры</span></td><td>L&amp;I (insurance), COI</td></tr>
+<tr><td><b>Cargo insurance</b></td><td>Страховка самого груза. Закон для обычных грузов её не требует; брокеры почти всегда требуют, часто $100 000. Смотри исключения в полисе (например, reefer breakdown для рефрижераторов, электроника).</td><td><span class="tag">Брокеры</span></td><td>COI</td></tr>
+<tr><td><b>Physical damage</b></td><td>Страховка своего трака и трейлера. Обычно её требует банк или лизинговая компания, а не брокер.</td><td>Лизинг / для себя</td><td>COI</td></tr>
+<tr><td><b>General liability (GL)</b></td><td>Общая ответственность (не связанная с ездой). Некоторые брокеры и склады её просят.</td><td><span class="tag">Иногда брокеры</span></td><td>COI</td></tr>
+<tr><td><b>ELD</b></td><td>Электронный журнал часов, должен быть в списке FMCSA. Есть исключения (например, некоторые старые двигатели, short-haul), но для дальних рейсов он почти всегда нужен.</td><td><span class="tag">Закон</span></td><td>eld.fmcsa.dot.gov</td></tr>
+<tr><td><b>IRP</b> (apportioned plates)</td><td>Номера, которые действуют во многих штатах. Нужны для «квалифицированных» машин в межштатных рейсах (например, 2 оси и больше 26 000 lbs, или 3+ оси).</td><td><span class="tag">Закон (штаты)</span></td><td>Cab card (регистрационная карточка)</td></tr>
+<tr><td><b>IFTA</b></td><td>Лицензия и ежеквартальный отчёт по топливному налогу между штатами, для тех же «квалифицированных» машин. В кабине должны быть лицензия и наклейки.</td><td><span class="tag">Закон (штаты)</span></td><td>Лицензия IFTA</td></tr>
+<tr><td><b>HVUT, форма 2290</b></td><td>Федеральный налог на тяжёлые машины <b>от 55 000 lbs</b> (taxable gross weight). Платится за период с 1 июля по 30 июня. Подтверждение — штампованный Schedule 1, без него не продлят регистрацию.</td><td><span class="tag">Закон (IRS)</span></td><td>Schedule 1</td></tr>
+<tr><td><b>CDL + медкарта</b></td><td>Коммерческие права нужного класса (обычно Class A для тягача с прицепом) и медицинское заключение DOT.</td><td><span class="tag">Закон</span></td><td>Копия CDL и медкарты</td></tr>
+<tr><td><b>English proficiency (ELP)</b></td><td>Водитель должен говорить и читать по-английски достаточно, чтобы общаться, понимать знаки и отвечать инспектору (49 CFR 391.11(b)(2)). С 25.06.2025 это <b>out-of-service</b> нарушение: водителя снимают с рейса. В апреле 2026 FMCSA обновила правила проверки (MC-SEE-2026-0002).</td><td><span class="tag">Закон</span></td><td>Разговор с водителем</td></tr>
+<tr><td><b>Drug &amp; Alcohol программа</b> + <b>Clearinghouse</b></td><td>Водители с CDL должны быть в программе тестов на наркотики и алкоголь. Owner-operator обычно вступает в <b>consortium</b> (общую программу). Перед наймом и потом раз в год делается запрос в Clearinghouse.</td><td><span class="tag">Закон</span></td><td>Справка consortium</td></tr>
+<tr><td><b>DQ file</b> (Driver Qualification)</td><td>Папка на каждого водителя: заявление, проверка стажа, MVR (история вождения), медкарта, road test (или копия CDL вместо него), ежегодный пересмотр. Ведёт перевозчик.</td><td><span class="tag">Закон</span></td><td>Только у перевозчика</td></tr>
+<tr><td><b>Annual inspection</b></td><td>Ежегодный техосмотр трака и трейлера с отчётом или наклейкой.</td><td><span class="tag">Закон</span></td><td>Отчёт / наклейка</td></tr>
+<tr><td><b>EIN + W-9</b></td><td>Налоговый номер компании и форма W-9 для брокеров.</td><td><span class="tag">Брокеры</span> (налоги)</td><td>IRS letter / W-9</td></tr>
+<tr><td><b>Банк или NOA</b></td><td>Куда платить: письмо банка или voided check (погашенный чек), либо <b>NOA</b> от факторинга.</td><td><span class="tag">Брокеры</span></td><td>Документ банка / NOA</td></tr>
+<tr><td><b>SCAC</b></td><td>4-буквенный код перевозчика от NMFTA. Нужен не всем: некоторым шипперам, в интермодале, на границе.</td><td><span class="tag">Иногда</span></td><td>nmfta.org</td></tr>
+<tr><td><b>TWIC / Hazmat</b></td><td>TWIC: пропуск в порты (TSA). Hazmat endorsement (H) в CDL — для опасных грузов, плюс больше страховки.</td><td>Только для таких грузов</td><td>Копия карты / CDL</td></tr>
+<tr><td><b>Налоги штатов</b></td><td><b>New York HUT</b>: траки от 18 000 lbs (gross), нужны регистрация и наклейка. <b>Kentucky KYU</b>: свыше 59 999 lbs. <b>New Mexico WDT</b>: свыше 26 000 lbs, электронный пермит на каждую машину. <b>Oregon weight-mile</b>: свыше 26 000 lbs, регистрация до въезда. Можно и разовые пермиты (trip permits). Список не полный.</td><td><span class="tag">Закон (штаты)</span></td><td>Копии пермитов</td></tr>
+</table></div>
+<div class="warnbox">Если перевозчик едет в NY, KY, NM или OR без нужного пермита, это штраф и задержка на весах. Перед грузом в эти штаты спрашивай: «У тебя есть HUT, KYU, NM, Oregon?»</div>
+<div class="real">Новый перевозчик первые <b>18 месяцев</b> находится в программе <b>New Entrant</b>: в первые 12 месяцев проходит safety audit (водители, часы, ремонт, аварии, тесты); не прошёл — регистрацию могут отозвать. <b>HOS</b> для грузовых: не больше 11 часов за рулём после 10 часов отдыха, не ехать после 14-го часа с начала смены, 30 минут перерыва после 8 часов езды, лимит 60/70 часов за 7/8 дней (обнуляется 34 часами отдыха). Ты не оформляешь эти документы сам, но <b>обязан следить</b>, чтобы у перевозчика всё было в порядке.</div>
+<h3 id="s3c">3C. Анкета онбординга: что спросить и собрать у перевозчика</h3>
+<div class="kid">Прежде чем искать груз для друга, ты узнаёшь всё про его машину: какая она большая, что в неё влезает, куда он любит ездить и сколько хочет получить. Иначе найдёшь груз, который не влезет или поедет туда, куда он не хочет.</div>
+<div class="real">Собери это <b>до первого груза</b>. Брокер спросит половину этих вещей прямо в первом звонке (тип трейлера, вес, где трак, MC), а остальное нужно для carrier packet, твоего договора и ollie.</div>
+<div class="tw"><table>
+<tr><th>Что</th><th>Зачем</th><th>Где проверить</th><th>Обязательно?</th></tr>
+<tr><th colspan="4">🏢 Компания</th></tr>
+<tr><td>Юр. название + DBA (торговое имя)</td><td>Должно совпадать в rate con, COI, W-9 и SAFER</td><td>SAFER, W-9</td><td>Да</td></tr>
+<tr><td>MC и USDOT</td><td>Брокер проверяет по ним; связь с биржей</td><td>SAFER, L&amp;I</td><td>Да</td></tr>
+<tr><td>Владелец: имя, телефон, email, копия ID</td><td>Проверка личности; кто подписывает договор и доверенность</td><td>Сверить с контактами в SAFER; видеозвонок</td><td>Да</td></tr>
+<tr><td>Адрес (physical и mailing)</td><td>Совпадает ли с FMCSA; домашняя база</td><td>SAFER</td><td>Да</td></tr>
+<tr><td>EIN + подписанный W-9</td><td>Нужен каждому брокеру</td><td>W-9</td><td>Да</td></tr>
+<tr><th colspan="4">📄 Документы</th></tr>
+<tr><td>MC Authority letter (письмо FMCSA о выдаче)</td><td>Брокеры просят в carrier packet</td><td>L&amp;I</td><td>Да</td></tr>
+<tr><td>COI + контакт страхового агента</td><td>Брокер просит COI на своё имя как certificate holder. Агент быстро выпускает новые COI</td><td>L&amp;I (liability на файле), звонок агенту</td><td>Да</td></tr>
+<tr><td>Наша доверенность (LOA / POA), подписанная</td><td>Право вести переговоры и подписывать rate con</td><td>—</td><td>Да</td></tr>
+<tr><td>Подписанный Dispatch Service Agreement</td><td>Основа отношений и твоей оплаты</td><td>—</td><td>Да</td></tr>
+<tr><td>Копии IRP cab card, IFTA, 2290 Schedule 1, annual inspection, пермиты штатов</td><td>Знаешь, куда можно ехать без проблем</td><td>Копии</td><td>Желательно</td></tr>
+<tr><th colspan="4">💵 Деньги</th></tr>
+<tr><td>Как получает оплату: факторинг / quick pay / обычные условия</td><td>Влияет на выбор брокера (факторинг может не одобрить брокера)</td><td>—</td><td>Да</td></tr>
+<tr><td>NOA факторинга <i>или</i> voided check / письмо банка</td><td>Куда брокер переводит деньги</td><td>Подтвердить звонком в факторинг</td><td>Да</td></tr>
+<tr><td>Наш процент, база (gross / line-haul), когда и как мы выставляем счёт</td><td>Чтобы не было споров</td><td>Договор</td><td>Да</td></tr>
+<tr><th colspan="4">🚛 Трак</th></tr>
+<tr><td>Unit #, год, марка, модель, VIN, номер и штат регистрации</td><td>Брокер и склады спрашивают; трекинг</td><td>Cab card</td><td>Да</td></tr>
+<tr><td>Максимальная загрузка (payload) / вес трака пустым</td><td>Можно ли взять груз 44 000 lbs и уложиться в лимит 80 000 lbs</td><td>Спросить, скан весов (CAT scale)</td><td>Да</td></tr>
+<tr><th colspan="4">🚚 Трейлер</th></tr>
+<tr><td>Тип и размеры: 53' dry van, reefer, flatbed, step deck…; высота и ширина дверей</td><td>Какие грузы подходят</td><td>Спросить / фото</td><td>Да</td></tr>
+<tr><td>Reefer: модель агрегата, может ли multi-temp, есть ли запись температуры</td><td>Шипперы продуктов спрашивают</td><td>Спросить</td><td>Для reefer</td></tr>
+<tr><td>Flatbed: tarps (размер), straps, chains, binders, coil racks</td><td>Многие грузы требуют</td><td>Фото</td><td>Для flatbed</td></tr>
+<tr><td>Extras: load locks / e-track, pallet jack, liftgate, team</td><td>Отдельные грузы и доплаты</td><td>Спросить</td><td>Желательно</td></tr>
+<tr><th colspan="4">👤 Водитель(и)</th></tr>
+<tr><td>Имя, телефон (WhatsApp/SMS), email</td><td>Dispatch, check calls, ollie</td><td>—</td><td>Да</td></tr>
+<tr><td>CDL: класс, штат, срок; медкарта: срок</td><td>Законно ли водить; напоминание о продлении</td><td>Копии</td><td>Да</td></tr>
+<tr><td>Endorsements: hazmat (H), tanker (N), doubles/triples (T); TWIC</td><td>Какие грузы можно брать</td><td>Копия CDL / TWIC</td><td>Если есть</td></tr>
+<tr><td>Уровень английского (ELP)</td><td>Нарушение = out-of-service на дороге; общение со складом</td><td>Короткий звонок на английском</td><td>Да</td></tr>
+<tr><td>Аварийный контакт</td><td>На случай ДТП или если водитель пропал со связи</td><td>—</td><td>Да</td></tr>
+<tr><th colspan="4">🗺️ Предпочтения</th></tr>
+<tr><td>Home base, сколько недель в рейсе, когда домой</td><td>Планировать грузы к дому</td><td>—</td><td>Да</td></tr>
+<tr><td>Предпочитаемые направления (lanes) и регионы</td><td>Где искать грузы</td><td>—</td><td>Да</td></tr>
+<tr><td>Минимальный RPM (с deadhead), максимальный deadhead</td><td>Какие грузы предлагать</td><td>—</td><td>Да</td></tr>
+<tr><td>Куда <b>не</b> едет: NYC, Канада, Калифорния, горы зимой…</td><td>Не тратить время на ненужные грузы</td><td>—</td><td>Да</td></tr>
+<tr><td>График доступности, выходные</td><td>Когда трак свободен</td><td>—</td><td>Да</td></tr>
+<tr><th colspan="4">📡 Связь и трекинг</th></tr>
+<tr><td>Провайдер ELD (Motive, Samsara и др.)</td><td>Часы HOS, местоположение</td><td>Спросить</td><td>Да</td></tr>
+<tr><td>Готов ли включать трекинг для брокеров (Macropoint, Trucker Tools и др.)</td><td>Многие брокеры его требуют</td><td>Спросить</td><td>Да</td></tr>
+</table></div>
+
+<h3>Как проверить перевозчика перед работой</h3>
+<ol>
+<li><b>SAFER / QCMobile</b> (FMCSA): статус authority (ACTIVE), количество траков, MCS-150 дата, инспекции, out-of-service проценты.</li>
+<li><b>L&amp;I</b> (<a href="https://li-public.fmcsa.dot.gov/" target="_blank" rel="noopener">li-public.fmcsa.dot.gov</a>): страховка на файле (liability), BOC-3, история authority (когда выдана, не было ли отзывов и повторных выдач).</li>
+<li><b>CSA / SMS</b>: нет ли высоких показателей по HOS, техсостоянию, водителю.</li>
+<li><b>COI</b>: звонок страховому агенту — действует ли полис, какие траки в нём указаны, какие лимиты и исключения.</li>
+<li><b>Carrier411 / Highway</b>: если есть доступ (часто доступ у брокеров), смотри отчёты и сигналы риска. Можно попросить знакомого брокера.</li>
+<li><b>Видеозвонок с владельцем</b> и сверка: имя на ID = владелец в документах; телефон и email = контакты в SAFER.</li>
+</ol>
+<div class="warnbox"><b>Красные флаги:</b> недавние изменения в authority, адресе, телефоне или email в FMCSA; контакты в SAFER не совпадают с тем, кто с тобой говорит; страховка недавно отменялась или меняется; authority недавно «перевыпущена» после отзыва; просьба платить «на другой счёт» без NOA; отказ от видеозвонка; давление «давай быстрее, без договора».</div>
+
+<h3 id="s3d">3D. Что водитель даёт по каждому рейсу</h3>
+<div class="kid">После каждой поездки почтальон приносит бумажку с подписью: «Письмо отдал». Без этой бумажки денег не дают.</div>
+<ul>
+<li><b>Перед погрузкой:</b> подтверждение, что он едет, ETA, есть ли часы HOS.</li>
+<li><b>На погрузке:</b> время прибытия (check-in) и убытия, фото <b>BOL</b> с номером пломбы (seal), фото груза и закрепления (для flatbed).</li>
+<li><b>В пути:</b> ответ на check calls (где, ETA), сразу о проблемах (поломка, пробка, погода, задержка на весах).</li>
+<li><b>На разгрузке:</b> время прибытия и убытия (для detention), чёткое фото <b>POD</b> (BOL с подписью получателя, все страницы), отметки о повреждениях или недостаче (OS&amp;D).</li>
+<li><b>Расходы:</b> квитанция <b>lumper</b>, scale ticket, квитанции за пермиты, если брокер их компенсирует.</li>
+<li><b>Проблемы:</b> фото, имя сотрудника склада, время. Всё это потом нужно для detention, TONU и споров.</li>
+</ul>
+<h3 id="s3e">3E. Куда всё это записать в ollie</h3>
+<div class="kid">У каждой вещи в тетрадке есть своя страничка: водители на одной, машины на другой, бумажки на третьей. Тогда ничего не теряется.</div>
+<div class="tw"><table>
+<tr><th>Что собрали</th><th>Раздел ollie</th><th>Поля</th></tr>
+<tr><td>Водитель: имя, телефон, email, CDL</td><td><b>Drivers</b></td><td>Name, Phone, Email, License number, License state, License expiry (срок CDL), Notes (медкарта до…, endorsements, ELP, аварийный контакт), вложения (копии CDL, медкарты). Текущий трак и трейлер привязываются к водителю. PIN — для входа в <code>dispatch.under.kg/driver</code>.</td></tr>
+<tr><td>Трак</td><td><b>Trucks</b></td><td>Unit number, Year, Make, Model, VIN, Plate, Plate state, Notes (payload, ELD-провайдер, IRP/IFTA, 2290 до…, техосмотр до…), вложения (cab card, Schedule 1, inspection).</td></tr>
+<tr><td>Трейлер</td><td><b>Trailers</b></td><td>Unit number, Owner (Fleet / Carrier / Customer / Other) + Owner name, Year, Make, Trailer type, Length (ft), VIN, Plate, Plate state, Notes (размеры дверей, reefer-агрегат, tarps/straps, load locks).</td></tr>
+<tr><td>Документы компании: MC letter, COI, W-9, NOA или банк, LOA, наш договор</td><td><b>Documents</b></td><td>Загрузить файлы и поставить теги (например, <code>carrier:ИМЯ</code>, <code>coi</code>, <code>w9</code>, <code>noa</code>, <code>loa</code>, <code>agreement</code>). ollie распознаёт текст и делает поиск по нему.</td></tr>
+<tr><td>Домашняя база, часовой пояс</td><td><b>Terminals</b></td><td>Name, Address, Timezone (например, America/Chicago).</td></tr>
+<tr><td>Rate con, BOL, POD, lumper</td><td><b>Loads → Documents</b></td><td>Загрузить к конкретному грузу.</td></tr>
+<tr><td>Check calls, ETA, detention</td><td><b>Trips → Check calls</b></td><td>Время, место, статус, опоздание.</td></tr>
+</table></div>
+<div class="real">В ollie нет отдельной карточки «перевозчик» с полями MC, страховки и предпочтений: это система одного автопарка. Поэтому данные компании храним в <b>Documents</b> с тегами и в <b>Notes</b> трака или водителя, а предпочтения (lanes, мин. RPM, no-go штаты) — в Notes водителя. Поля ставок у водителя (loaded / deadhead rate per mile, detention per hour) — это <b>оплата водителя</b>, а не минимальная ставка груза. Не путай.</div>
+
+<h3 id="s3f">3F. Чеклист онбординга перевозчика (для печати)</h3>
+<p class="disc">Галочки сохраняются в этом браузере. Кнопка печатает только этот чеклист (можно «Сохранить как PDF»).</p>
+<p><button type="button" class="btnp" id="printonb">🖨️ Распечатать чеклист</button> <button type="button" class="btnp" id="resetonb">Сбросить галочки</button></p>
+<div id="onb">
+<p class="onlyprint"><b>Перевозчик:</b> ____________________ <b>MC:</b> __________ <b>DOT:</b> __________ <b>Дата:</b> __________</p>
+<h4>Проверка</h4>
+<ul class="check">
+<li><label><input type="checkbox"> SAFER: authority ACTIVE, данные совпадают, MCS-150 свежий</label></li>
+<li><label><input type="checkbox"> L&amp;I: liability на файле, BOC-3 есть, история authority без сюрпризов</label></li>
+<li><label><input type="checkbox"> CSA / инспекции — без серьёзных проблем</label></li>
+<li><label><input type="checkbox"> Видеозвонок с владельцем, ID совпадает, контакты = SAFER</label></li>
+<li><label><input type="checkbox"> Звонок страховому агенту: полис действует, трак в полисе, лимиты</label></li>
+</ul>
+<h4>Документы</h4>
+<ul class="check">
+<li><label><input type="checkbox"> Dispatch Service Agreement подписан</label></li>
+<li><label><input type="checkbox"> LOA / POA (переговоры и подпись rate con) подписана</label></li>
+<li><label><input type="checkbox"> MC authority letter</label></li>
+<li><label><input type="checkbox"> W-9 + EIN</label></li>
+<li><label><input type="checkbox"> COI (liability, cargo; агент и контакты)</label></li>
+<li><label><input type="checkbox"> NOA факторинга или voided check / письмо банка</label></li>
+<li><label><input type="checkbox"> IRP cab card, IFTA, 2290 Schedule 1, annual inspection</label></li>
+<li><label><input type="checkbox"> Пермиты штатов (NY HUT, KYU, NM, OR), если нужны</label></li>
+<li><label><input type="checkbox"> CDL, медкарта, справка consortium (drug &amp; alcohol)</label></li>
+</ul>
+<h4>Техника и водитель</h4>
+<ul class="check">
+<li><label><input type="checkbox"> Трак: unit, год, марка, VIN, номер, payload</label></li>
+<li><label><input type="checkbox"> Трейлер: тип, длина, двери, оснащение (tarps / straps / load locks / reefer)</label></li>
+<li><label><input type="checkbox"> Водитель: телефон, CDL, endorsements, английский, аварийный контакт</label></li>
+<li><label><input type="checkbox"> ELD-провайдер, согласие на трекинг (Macropoint / Trucker Tools)</label></li>
+</ul>
+<h4>Работа</h4>
+<ul class="check">
+<li><label><input type="checkbox"> Home base, график, когда домой</label></li>
+<li><label><input type="checkbox"> Lanes, мин. RPM, макс. deadhead, no-go штаты</label></li>
+<li><label><input type="checkbox"> Как получает оплату (факторинг / quick pay / terms)</label></li>
+<li><label><input type="checkbox"> Наш % и как платит нам; доступ к бирже (seat в аккаунте DAT)</label></li>
+<li><label><input type="checkbox"> Всё внесено в ollie: Drivers, Trucks, Trailers, Documents</label></li>
+</ul>
+</div>
+</section>
+<section id="s4">
+<h2><span class="num">4</span>Как подключиться к брокеру</h2>
+<div class="kid">Прежде чем доверить тебе свою игрушку, друг хочет узнать, кто ты, где живёшь и не ломал ли ты чужие игрушки. Брокер делает то же самое с перевозчиком.</div>
+<h3>Carrier packet (пакет перевозчика)</h3>
+<p>Это анкета и документы для регистрации у брокера. Обычно туда входят:</p>
+<ul>
+<li>MC / USDOT, название компании, адрес, телефон, email;</li>
+<li><b>W-9</b> (налоговые данные) и <b>COI</b> (certificate of insurance), где брокер вписан как certificate holder;</li>
+<li>банковские реквизиты или реквизиты факторинга (Notice of Assignment, если перевозчик работает с факторингом);</li>
+<li>подписанный <b>Broker–Carrier Agreement</b>, общий договор с брокером, где написано, кто за что отвечает.</li>
+</ul>
+<h3>Сервисы, через которые брокеры проверяют перевозчиков</h3>
+<div class="grid">
+<div class="card"><h4>Highway</h4><p>Проверка личности владельца, контактов и устройства, защита от мошенников и захвата MC. Многие брокеры подключают перевозчиков только через неё.</p></div>
+<div class="card"><h4>RMIS</h4><p>Платформа для онбординга и мониторинга страховки. Перевозчик заполняет профиль, а брокеры видят его и получают уведомления, если что-то изменилось.</p></div>
+<div class="card"><h4>MyCarrierPackets</h4><p>Один профиль перевозчика, из которого брокеры берут пакет документов в один клик.</p></div>
+<div class="card"><h4>Carrier Assure</h4><p>Оценка риска перевозчика: безопасность, страховка, признаки мошенничества.</p></div>
+</div>
+<div class="real">Брокеры боятся мошенников, поэтому любая нестыковка снижает доверие: адрес не совпадает с FMCSA, email на gmail, а не на домене компании, VoIP-номер, недавняя смена банка или контактов. Совет: настрой профили перевозчика в Highway и MyCarrierPackets <b>заранее</b>, с реальными и одинаковыми везде данными. Тогда подключение к новому брокеру займёт минуты, а не день.</div>
+<div class="warnbox">Ты как диспетчер звонишь брокеру <b>от имени перевозчика</b> и всегда говоришь, что ты диспетчер этой компании. Не выдавай себя за владельца и не называйся чужим именем. Многие брокеры спрашивают, кто звонит, и это нормально.</div>
+</section>
+
+<section id="s5">
+<h2><span class="num">5</span>Биржи грузов и как выбрать хороший груз</h2>
+<div class="kid">Биржа — это большая доска объявлений: «Нужно отвезти коробки из города А в город Б, плачу столько-то». Ты выбираешь самое выгодное объявление и не забываешь, что до города А тоже надо ещё доехать.</div>
+<h3>Основные биржи (load boards)</h3>
+<ul>
+<li><b>DAT</b>: одна из самых крупных бирж, у неё есть данные о средних ставках по направлениям (lanes).</li>
+<li><b>Truckstop</b>: тоже крупная биржа с информацией о брокерах (кредит и скорость оплаты).</li>
+<li>Есть и <b>собственные приложения крупных брокеров</b>, где можно сразу забронировать груз. Подписка на биржу платная. Заранее реши, на кого она оформлена: на перевозчика или на тебя.</li>
+</ul>
+<h3>Главные слова при выборе груза</h3>
+<ul>
+<li><b>RPM (rate per mile)</b>: ставка, делённая на мили. Это главный показатель выгодности.</li>
+<li><b>Deadhead (DH)</b>: пустой пробег до точки погрузки. За него никто не платит, но топливо и время тратятся.</li>
+<li><b>Lane</b>: направление «откуда → куда». Одни направления платят хорошо, другие плохо: оттуда трудно выехать с грузом.</li>
+<li><b>Вес, тип трейлера, даты, требования</b> (TWIC, hazmat, tarps, team и т. д.).</li>
+<li><b>Брокер</b>: его кредитный рейтинг, дни до оплаты, есть ли quick pay, нет ли на него жалоб.</li>
+</ul>
+<h3>Математика: считаем честно, вместе с deadhead</h3>
+<p><span class="tag">ПРИМЕР</span> Все цифры ниже придуманы только для иллюстрации, это не реальные рыночные ставки.</p>
+<div class="calc">Груз A: $2 400, гружёных 800 миль, deadhead 100 миль
+  RPM без учёта DH:   2400 / 800        = $3.00 за милю
+  RPM «всё включено»: 2400 / (800+100)  = $2.67 за милю
+
+Груз B: $1 800, гружёных 500 миль, deadhead 20 миль
+  RPM без учёта DH:   1800 / 500        = $3.60 за милю
+  RPM «всё включено»: 1800 / (500+20)   = $3.46 за милю
+
+Диспетчер 7% от gross:
+  A → 2400 × 0.07 = $168      B → 1800 × 0.07 = $126</div>
+<div class="real">Груз A приносит больше денег за один рейс, а груз B больше денег <b>за каждую милю</b> и, скорее всего, за день. Чтобы правильно выбрать, смотри ещё:<br>
+1) куда трак попадёт после разгрузки и есть ли оттуда хорошие грузы;<br>
+2) сколько дней займёт рейс и сколько в итоге выйдет <b>за неделю</b>;<br>
+3) чего хочет водитель (например, быть дома к выходным);<br>
+4) расходы на милю (топливо, ремонт, страховка). Их знает только перевозчик, поэтому спроси у него, какой RPM для него минимальный.</div>
+</section>
+
+<section id="s6">
+<h2><span class="num">6</span>Переговоры с брокером</h2>
+<div class="kid">Брокер хочет заплатить поменьше, а ты хочешь получить побольше. Ты вежливо говоришь, сколько хочешь, и объясняешь почему. Обычно вы встречаетесь где-то посередине.</div>
+<h3>Правила</h3>
+<ul>
+<li>Сначала <b>задай вопросы</b>, потом называй цену. Чем больше ты знаешь о грузе, тем сильнее твоя позиция.</li>
+<li>Знай рынок: средняя ставка по lane (в DAT/Truckstop), сколько траков рядом, какой день недели.</li>
+<li>Называй цифру <b>чуть выше</b> своей цели, чтобы было куда уступить.</li>
+<li>Будь вежливым и коротким. Брокеры за день говорят с десятками диспетчеров.</li>
+<li>Всё, о чём договорились (detention, TONU, lumper), должно быть <b>записано в rate con</b>. Устная договорённость ничего не стоит.</li>
+</ul>
+<h3>Примеры фраз <span class="tag">ставки условные</span></h3>
+<div class="script"><div class="en"><span class="who">You:</span> Hi, this is [Name], dispatcher for [Carrier name], MC [number]. I'm calling about your load from Dallas, TX to Atlanta, GA picking up tomorrow. Is it still available?</div><div class="ru">«Здравствуйте, я [имя], диспетчер компании [название], MC [номер]. Звоню насчёт вашего груза Даллас → Атланта с погрузкой завтра. Он ещё свободен?» Сразу говори, кто ты и о каком грузе речь.</div></div>
+<div class="script"><div class="en"><span class="who">You:</span> What's the commodity and weight? Is it live load or drop? Any appointment times? Do you need tarps / straps / load locks?</div><div class="ru">«Что за груз и какой вес? Грузят при водителе (live) или трейлер оставляют (drop)? Есть точное время (appointment)? Нужны тенты, ремни, распорки?»</div></div>
+<div class="script"><div class="en"><span class="who">Broker:</span> I can do $1,600.
+<span class="who">You:</span> I appreciate it. My truck is empty right there, 15 miles out, and can be there first thing in the morning. I need $1,900 to make it work.</div><div class="ru">«Спасибо. Мой трак пустой совсем рядом, в 15 милях, и может быть там с самого утра. Чтобы это было выгодно, мне нужно $1 900». Объясни, почему твой трак ценен: близко, готов, надёжен.</div></div>
+<div class="script"><div class="en"><span class="who">Broker:</span> Best I can do is $1,750.
+<span class="who">You:</span> Can we meet at $1,800? You'll get a reliable truck with updates every 4 hours.</div><div class="ru">«Давайте сойдёмся на $1 800, и вы получите надёжный трак с обновлениями каждые 4 часа». Небольшая уступка плюс обещание качественного сервиса.</div></div>
+<div class="script"><div class="en"><span class="who">You:</span> What's your detention policy? And TONU if the load cancels? Please put it on the rate con.</div><div class="ru">«Какие у вас правила по detention (оплата ожидания)? А TONU, если груз отменят? Пожалуйста, впишите это в rate con».</div></div>
+<div class="script"><div class="en"><span class="who">You:</span> Let me confirm with my driver and I'll call you back in five minutes.</div><div class="ru">«Сейчас подтвержу с водителем и перезвоню через пять минут». Так ты не берёшь груз без согласия перевозчика.</div></div>
+<div class="script"><div class="en"><span class="who">You:</span> Thanks, but that rate doesn't work for us. If anything changes, call me back at [phone].</div><div class="ru">«Спасибо, но эта ставка нам не подходит. Если что-то изменится, перезвоните мне». Умение вежливо отказаться очень важно. Плохой груз хуже, чем никакой.</div></div>
+<div class="goodbox">Перед тем как сказать «да», обязательно убедись, что перевозчик (водитель) согласен на этот груз и ставку. Ты работаешь на него, и это его трак, его время и его репутация.</div>
+</section>
+
+<section id="s7">
+<h2><span class="num">7</span>Деньги: как платят и как ты получаешь свой процент</h2>
+<div class="kid">Брокер платит не сразу, а через какое-то время, как будто «потом отдам». Если ждать не хочется, есть дядя (факторинг), который даст деньги сразу, но возьмёт себе немножко за помощь.</div>
+<h3>Как платит брокер</h3>
+<ul>
+<li><b>Обычные условия (payment terms)</b>: срок указан в rate con или в договоре с брокером. Нередко это несколько недель после получения инвойса и POD.</li>
+<li><b>Quick pay</b>: брокер платит быстрее, но удерживает процент. Условия у каждого брокера свои.</li>
+<li><b>Factoring</b>: перевозчик продаёт счёт факторинговой компании. Она платит сразу (за вычетом комиссии), а потом сама получает деньги с брокера. Бывает <i>recourse</i> (если брокер не заплатил, долг возвращается перевозчику) и <i>non-recourse</i> (риск неоплаты по оговорённым причинам берёт на себя факторинг; обычно дороже). Кроме того, факторинг часто проверяет кредит брокеров.</li>
+</ul>
+<div class="real">Ставки факторинга и quick pay сильно различаются. Всегда сравнивай итоговые деньги на руки, все скрытые сборы (за перевод, минимум в месяц, срок договора) и <b>условия выхода</b> из договора.</div>
+<h3>Сколько берут диспетчеры</h3>
+<p>Сервис DispatchScore изучил сайты 146 американских диспетчерских компаний. Из них 56 публикуют цены, и у тех, кто указывает процент, вышло так:</p>
+<div class="grid">
+<div class="card"><h4>7%</h4><p>медиана (типичная ставка)</p></div>
+<div class="card"><h4>7,3%</h4><p>среднее</p></div>
+<div class="card"><h4>2–12%</h4><p>разброс</p></div>
+</div>
+<p class="disc">Источник: <a href="https://dispatchscore.com/guides/dispatch-service-fees/" target="_blank" rel="noopener">DispatchScore, Dispatch service fees (данные на ноябрь 2026)</a>. Некоторые компании берут фиксированную плату в неделю, в месяц или за трак.</p>
+<h3>Как диспетчер получает свои деньги</h3>
+<ol>
+<li>Подписываешь с перевозчиком <b>Dispatch Service Agreement</b>, письменный договор.</li>
+<li>Раз в неделю считаешь все доставленные грузы за неделю и отправляешь перевозчику <b>инвойс</b> на свой процент вместе со списком грузов.</li>
+<li>Перевозчик платит тебе. Деньги за фрахт идут <b>перевозчику</b>, а не тебе (см. bona fide agent в <a href="#s1">разделе 1</a>).</li>
+</ol>
+<h3>Что обязательно должно быть в договоре с перевозчиком</h3>
+<ul>
+<li>Ты назначен агентом перевозчика. Что ты делаешь и чего не делаешь.</li>
+<li>Процент или фиксированная плата. <b>С чего считается процент</b>: gross (вся ставка) или line-haul (без доплат). Как поступать с detention, TONU и lumper.</li>
+<li>Когда и как платится (каждую неделю, за доставленные грузы), что делать при неоплате или споре.</li>
+<li>Правило «каждый груз согласует перевозчик» или в каких рамках ты можешь брать грузы сам.</li>
+<li>Минимальный RPM, нужные направления, домашние дни водителя.</li>
+<li>Срок договора, как его расторгнуть, конфиденциальность (данные брокеров и перевозчика).</li>
+<li>Доступы: к бирже, к email, к профилям в Highway/RMIS, и что с ними происходит при расторжении.</li>
+<li>Тебе как ИП в Кыргызстане важны ещё валюта, способ международного перевода и налоги. Это уточни у бухгалтера.</li>
+</ul>
+</section>
+<section id="s8">
+<h2><span class="num">8</span>Репутация MC: FreightGuard, DNU, CSA и «возраст»</h2>
+<div class="kid">Если ты всегда приходишь вовремя и ничего не ломаешь, тебя зовут играть снова. Если один раз подвёл, про это узнают все в садике, и тебя долго не будут звать.</div>
+<h3>Где «живёт» репутация</h3>
+<div class="tw"><table>
+<tr><th>Что</th><th>Кто ведёт</th><th>Что значит</th></tr>
+<tr><td><b>FreightGuard</b></td><td>Carrier411 (платный сервис для брокеров)</td><td>Брокеры пишут отчёты о проблемах с перевозчиком: груз не забрали, удержание груза, мошенничество и т. д. Перевозчик получает уведомление и <b>72 часа</b> на ответ. За это время проблему можно решить, чтобы отчёт не остался в истории.</td></tr>
+<tr><td><b>TIA Watchdog</b></td><td>TIA (ассоциация брокеров)</td><td>Отчёты о серьёзном: удержание груза в заложниках (hostage load), кража, кража личности, double brokering. У перевозчика тоже 72 часа на ответ, после этого отчёт видят члены TIA.</td></tr>
+<tr><td><b>DNU (Do Not Use)</b></td><td>Каждый брокер у себя</td><td>Внутренний «чёрный список» брокера. Перевозчику об этом обычно не сообщают, он просто перестаёт получать грузы.</td></tr>
+<tr><td><b>CSA / SMS</b></td><td>FMCSA (публично)</td><td>Показатели безопасности по результатам инспекций и аварий: HOS, состояние трака, водитель и т. д. Брокеры и страховые на них смотрят.</td></tr>
+<tr><td><b>SAFER</b></td><td>FMCSA (публично)</td><td>Карточка компании: активна ли authority, страховка, количество траков, инспекции.</td></tr>
+<tr><td><b>Highway / Carrier Assure</b></td><td>Частные сервисы</td><td>Свои проверки и сигналы риска: идентичность, контакты, необычная активность.</td></tr>
+</table></div>
+<h3>Как держать хороший «ранк»</h3>
+<ul>
+<li><b>Никогда не срывать взятый груз.</b> Если что-то случилось, сообщи сразу, а не за час до погрузки.</li>
+<li>Приезжать вовремя, отвечать на check calls, быстро присылать POD.</li>
+<li>Никакого double brokering, никогда.</li>
+<li>Чистые инспекции: исправный трак, правильный ELD/HOS, документы водителя в порядке.</li>
+<li>Одни и те же правдивые контакты везде (FMCSA, Highway, carrier packets). Не менять часто банк, адрес и телефоны.</li>
+<li>Работать с одними и теми же хорошими брокерами: повторная работа строит доверие.</li>
+<li>Если пришёл отчёт, ответь в течение 72 часов, вежливо и с фактами (фото, переписка, время).</li>
+</ul>
+<h3>«Возраст» MC</h3>
+<p>Многие брокеры не работают с совсем новыми MC. Это правило каждого брокера, а не закон, и порог бывает разным, часто несколько месяцев. Поэтому новый перевозчик сначала работает с брокерами, лояльными к новичкам, и набирает историю. Плюс по закону есть 18 месяцев программы New Entrant (см. <a href="#s3">раздел 3</a>).</p>
+<div class="warnbox">Когда на MC накапливается много FreightGuard-отчётов и DNU, формально номер работает, но хорошие брокеры его не берут. Тогда говорят, что «MC стал нерентабельным». Открыть новую компанию — это не простой выход: новый MC снова «молодой», а попытки скрыть старую историю брокеры и FMCSA замечают.</div>
+</section>
+
+<section id="s9">
+<h2><span class="num">9</span>Риски и мошенничество</h2>
+<div class="kid">Бывают плохие дяди, которые притворяются хорошими, чтобы забрать чужие игрушки или деньги. Поэтому мы всегда проверяем, кто есть кто, даже если голос по телефону очень приятный.</div>
+<div class="grid">
+<div class="card"><h4>🔁 Double brokering</h4><p>Перевозчик (или самозванец) берёт груз и тайно передаёт его другому перевозчику. Второй часто остаётся без денег, а брокер может потерять груз. Для настоящего MC это почти гарантированные отчёты и DNU.</p></div>
+<div class="card"><h4>🎭 Кража личности</h4><p>Мошенники выдают себя за твоего перевозчика: похожий email, поддельные документы, «смена банка». Или звонят тебе как будто от известного брокера.</p></div>
+<div class="card"><h4>📦 Кража груза</h4><p>Груз забирает поддельный перевозчик или его крадут со стоянки.</p></div>
+<div class="card"><h4>🕳️ Фальшивые брокеры</h4><p>Предлагают груз «слишком хорошо, чтобы быть правдой», а потом не платят. Или просят деньги за «регистрацию».</p></div>
+<div class="card"><h4>💳 Мошенничество с оплатой</h4><p>Письмо «у нас новые банковские реквизиты, платите сюда». Или просьба заплатить lumper наличными постороннему человеку.</p></div>
+<div class="card"><h4>🔐 Захват аккаунтов</h4><p>Взлом email, бирж или аккаунта в FMCSA. После этого от имени перевозчика можно менять данные.</p></div>
+</div>
+<h3>Как защищаться</h3>
+<ul>
+<li><b>Проверяй брокера</b>: его MC в SAFER, активна ли broker authority, рейтинг на бирже. Звони на номер с официального сайта или из SAFER, а не на номер из письма.</li>
+<li><b>Смотри на email-домен</b>: <code>dispatch@realbroker.com</code> и <code>realbroker-loads@gmail.com</code> — это разные вещи.</li>
+<li><b>Никогда</b> не меняй банковские реквизиты по письму. Подтверждай звонком по известному номеру.</li>
+<li>Включи 2FA на email, биржах, Highway, FMCSA (Login.gov) и в факторинге. Не делись паролями в чатах.</li>
+<li>Водитель забирает груз только по данным из <b>rate con</b>. Если «вдруг поменяли адрес», сначала проверь у брокера по его официальному номеру.</li>
+<li>Не перевози груз через третьих лиц, никаких «передай моему другу-перевозчику».</li>
+<li>Сохраняй всё: rate con, переписку, фото BOL/POD, время прибытия и убытия.</li>
+<li>О мошенничестве сообщай брокеру, в FMCSA (National Consumer Complaint Database) и, если это касается брокеров-членов TIA, на горячую линию TIA (fraudhotline@tianet.org).</li>
+</ul>
+</section>
+
+<section id="s10">
+<h2><span class="num">10</span>Как это выглядит у нас: Бишкек + ollie</h2>
+<h3>🌙 Работа из Бишкека: часовые пояса</h3>
+<p>Бишкек живёт по UTC+6 круглый год, а в США есть переход на летнее время. Поэтому разница зимой на 1 час больше, чем летом.</p>
+<div class="tw"><table>
+<tr><th>Пояс США</th><th>Примеры</th><th>Бишкек впереди зимой</th><th>Летом</th></tr>
+<tr><td>Eastern (ET)</td><td>NY, GA (Atlanta), FL, OH, PA</td><td>+11 ч</td><td>+10 ч</td></tr>
+<tr><td>Central (CT)</td><td>TX (Dallas), IL (Chicago), TN</td><td>+12 ч</td><td>+11 ч</td></tr>
+<tr><td>Mountain (MT)</td><td>CO (Denver), UT, AZ*</td><td>+13 ч</td><td>+12 ч*</td></tr>
+<tr><td>Pacific (PT)</td><td>CA, WA, NV, OR</td><td>+14 ч</td><td>+13 ч</td></tr>
+</table></div>
+<p class="disc">* Аризона (кроме резервации навахо) не переходит на летнее время, поэтому там круглый год +13 ч.</p>
+<div class="real">Рабочий день брокеров на Восточном побережье, 8:00–17:00 ET, это <b>19:00–04:00 по Бишкеку зимой</b> (летом 18:00–03:00). Центральный пояс ещё на час позже. Значит, основная работа идёт вечером и ночью, а самые горячие часы на бирже — это утро в США. Время в rate con и appointments всегда указано по <b>местному времени точки погрузки или разгрузки</b>, а не по Бишкеку. Хорошее правило: в ollie и в заметках всегда пиши пояс (например, «08:00 CT»).</div>
+<h3>🧭 ollie (dispatch.under.kg): где что лежит</h3>
+<p>ollie — это наша TMS (Transportation Management System), рабочий журнал диспетчера. Открывается по адресу <a href="https://dispatch.under.kg" target="_blank" rel="noopener">dispatch.under.kg</a>.</p>
+<div class="tw"><table>
+<tr><th>Раздел ollie</th><th>Что это в жизни</th><th>Когда используешь</th></tr>
+<tr><td><b>Trucks / Trailers</b></td><td>Траки и трейлеры твоих перевозчиков: номер, тип (dry van, reefer, flatbed), VIN</td><td>Один раз при подключении перевозчика</td></tr>
+<tr><td><b>Drivers</b></td><td>Водители. У каждого свой PIN для водительского приложения <code>dispatch.under.kg/driver</code></td><td>При подключении водителя</td></tr>
+<tr><td><b>Facilities</b></td><td>Shipper и receiver: склады и заводы с адресами. Часто создаются сами из грузов</td><td>Постепенно, по мере работы</td></tr>
+<tr><td><b>Loads</b> (+ New Load)</td><td>Груз из rate con: брокер (customer), pickup, delivery, время, ставка</td><td>После подписания rate con</td></tr>
+<tr><td><b>Trips</b> + Dispatch</td><td>Рейс: какой водитель и трак везут груз. ollie считает мили, пустые и гружёные</td><td>Когда отправляешь водителя</td></tr>
+<tr><td><b>Check calls</b></td><td>Где трак сейчас, ETA, статус, опоздания</td><td>Несколько раз за рейс</td></tr>
+<tr><td><b>Documents</b></td><td>Rate con, BOL, POD. ollie распознаёт документы с помощью ИИ и делает их доступными для поиска</td><td>При каждом документе</td></tr>
+<tr><td><b>Events</b></td><td>История всего, что произошло</td><td>Когда нужно разобраться, «что было»</td></tr>
+<tr><td><b>Expenses / Maintenance</b></td><td>Расходы (топливо, lumper) и ремонт</td><td>По мере появления</td></tr>
+</table></div>
+<p>Груз проходит путь от создания и назначения через «в пути» и «доставлен» до <b>invoiced</b> (счёт выставлен брокеру) и <b>settled</b> (оплачено). Ожидание у клиента (detention) тоже записывается в ollie.</p>
+<h3>🎙️ Идея на будущее: голосовой ИИ</h3>
+<p>У ollie есть интерфейс MCP: через него ИИ-помощник может сам записывать check calls и менять статусы. Идея на будущее такая: голосовой ИИ (например, на основе Fish Audio) звонит водителю, спрашивает «где ты и когда будешь?» и сам записывает ответ в ollie. Важно: водителю и брокеру должно быть ясно, что с ними говорит ИИ, а важные решения (ставка, согласие на груз) всегда принимает человек.</p>
+</section>
+
+<section id="s11">
+<h2><span class="num">11</span>Первые шаги: чеклист</h2>
+<p class="disc">Галочки сохраняются только в твоём браузере.</p>
+<ul class="check" id="checklist">
+<li><label><input type="checkbox"> Выучить глоссарий (раздел 13), особенно rate con, BOL, POD, RPM, deadhead, detention, TONU</label></li>
+<li><label><input type="checkbox"> Выбрать нишу: тип трейлера (dry van / reefer / flatbed / box truck / hotshot) и регионы</label></li>
+<li><label><input type="checkbox"> Подготовить свой договор Dispatch Service Agreement (лучше с юристом)</label></li>
+<li><label><input type="checkbox"> Разобраться с правилом bona fide agent: деньги за фрахт через меня не идут</label></li>
+<li><label><input type="checkbox"> Оформить бизнес-email на своём домене, телефон США, подпись в письмах</label></li>
+<li><label><input type="checkbox"> Найти первого перевозчика (owner-operator) и проверить его в SAFER: authority активна, страховка есть</label></li>
+<li><label><input type="checkbox"> Собрать документы перевозчика: MC/DOT, W-9, COI, NOA факторинга, банковские данные</label></li>
+<li><label><input type="checkbox"> Заполнить профили перевозчика в Highway / MyCarrierPackets</label></li>
+<li><label><input type="checkbox"> Подписка на биржу (DAT или Truckstop) и решение, на кого она оформлена</label></li>
+<li><label><input type="checkbox"> Записать в ollie траки, трейлеры, водителей; дать водителю PIN для driver-приложения</label></li>
+<li><label><input type="checkbox"> Узнать у перевозчика минимальный RPM, нужные направления и домашние дни</label></li>
+<li><label><input type="checkbox"> Подготовить скрипты для звонков брокерам на английском и потренироваться вслух</label></li>
+<li><label><input type="checkbox"> Включить 2FA везде, где можно</label></li>
+<li><label><input type="checkbox"> Наладить ночной график по времени США и не забывать про отдых</label></li>
+<li><label><input type="checkbox"> Первый груз: rate con → ollie → check calls → POD → invoice → оплата → мой %</label></li>
+</ul>
+</section>
+
+<section id="s12">
+<h2><span class="num">12</span>Частые ошибки новичков</h2>
+<ol>
+<li><b>Смотреть только на общую сумму</b>, не считая deadhead и дни в пути.</li>
+<li><b>Не читать rate con</b>: потом выясняется, что там штраф за опоздание или detention не оплачивается.</li>
+<li><b>Брать груз без согласия водителя.</b> Водитель отказывается, и срыв груза ложится на MC.</li>
+<li><b>Забыть про HOS</b>: обещать погрузку, когда у водителя не хватает часов.</li>
+<li><b>Путать часовые пояса</b>: Бишкек, ET, CT, PT.</li>
+<li><b>Молчать об опоздании.</b> Сообщённое заранее опоздание можно решить, а молчание — нет.</li>
+<li><b>Не фиксировать время прибытия и убытия</b> и в итоге не получить detention.</li>
+<li><b>Работать с непроверенными брокерами</b> или такими, у кого долгая оплата и плохой рейтинг.</li>
+<li><b>Нет письменного договора</b> с перевозчиком, а потом споры о процентах.</li>
+<li><b>Пропускать деньги за фрахт через себя</b>: это риск и с точки зрения правил брокеринга.</li>
+<li><b>Держать одного перевозчика</b>: если он уйдёт, у тебя ноль дохода.</li>
+<li><b>Верить письму «мы сменили банк»</b> без звонка.</li>
+<li><b>Слишком много траков сразу.</b> Сначала научись хорошо вести 1–2.</li>
+</ol>
+</section>
+<section id="s13">
+<h2><span class="num">13</span>Глоссарий A–Z</h2>
+<div class="gl-tools"><input id="q" type="search" placeholder="Найти термин: например, TONU, ожидание, страховка…" aria-label="Поиск по глоссарию" autocomplete="off"></div>
+<div class="letters" id="letters"></div>
+<p class="count" id="count"></p>
+<dl class="gl" id="gl"></dl>
+<noscript><p>Для глоссария нужен JavaScript.</p></noscript>
+</section>
+
+<section id="s14">
+<h2><span class="num">14</span>Источники</h2>
+<h3>Официальные (FMCSA / федеральные)</h3>
+<ul class="src">
+<li><a href="https://www.fmcsa.dot.gov/registration/insurance-filing-requirements" target="_blank" rel="noopener">FMCSA: Insurance Filing Requirements</a> ($750 000 / $300 000 / брокерский bond $75 000)</li>
+<li><a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-387/subpart-A/section-387.9" target="_blank" rel="noopener">49 CFR 387.9: минимальные уровни ответственности</a></li>
+<li><a href="https://www.fmcsa.dot.gov/registration/form-boc-3-designation-agents-service-process" target="_blank" rel="noopener">FMCSA: Form BOC-3</a></li>
+<li><a href="https://www.fmcsa.dot.gov/registration/updating-your-registration" target="_blank" rel="noopener">FMCSA: Biennial Update (MCS-150)</a></li>
+<li><a href="https://www.ucr.gov/" target="_blank" rel="noopener">Unified Carrier Registration (UCR)</a></li>
+<li><a href="https://www.fmcsa.dot.gov/regulations/hours-service/summary-hours-service-regulations" target="_blank" rel="noopener">FMCSA: Summary of Hours of Service</a></li>
+<li><a href="https://eld.fmcsa.dot.gov/" target="_blank" rel="noopener">FMCSA: ELD</a></li>
+<li><a href="https://clearinghouse.fmcsa.dot.gov/" target="_blank" rel="noopener">FMCSA Drug &amp; Alcohol Clearinghouse</a></li>
+<li><a href="https://www.fmcsa.dot.gov/safety/new-entrant-safety-assurance-program" target="_blank" rel="noopener">FMCSA: New Entrant Safety Assurance Program</a> (18 месяцев, аудит в первые 12)</li>
+<li><a href="https://safer.fmcsa.dot.gov/" target="_blank" rel="noopener">SAFER</a> · <a href="https://csa.fmcsa.dot.gov/" target="_blank" rel="noopener">CSA / SMS</a></li>
+<li><a href="https://www.federalregister.gov/documents/2023/06/16/2023-13080/definitions-of-broker-and-bona-fide-agents" target="_blank" rel="noopener">Federal Register: Definitions of Broker and Bona Fide Agents (2023)</a></li>
+<li><a href="https://www.fmcsa.dot.gov/registration/modernization-faqs" target="_blank" rel="noopener">FMCSA: Registration Modernization FAQs</a> · <a href="https://www.federalregister.gov/documents/2026/04/29/2026-08334/availability-of-motus-fmcsas-new-registration-system" target="_blank" rel="noopener">Motus, Federal Register 29.04.2026</a> (будущее MC-номеров)</li>
+<li><a href="https://nccdb.fmcsa.dot.gov/" target="_blank" rel="noopener">FMCSA National Consumer Complaint Database</a></li>
+<li><a href="https://www.irs.gov/instructions/i2290" target="_blank" rel="noopener">IRS: Instructions for Form 2290 (HVUT, 55 000 lbs)</a> · <a href="https://www.irs.gov/businesses/small-businesses-self-employed/trucking-tax-center" target="_blank" rel="noopener">IRS Trucking tax center</a></li>
+<li><a href="https://www.irs.gov/pub/irs-pdf/iw8bene.pdf" target="_blank" rel="noopener">IRS: Instructions for Form W-8BEN-E</a> · <a href="https://www.irs.gov/forms-pubs/about-form-w-8-ben" target="_blank" rel="noopener">Form W-8BEN</a> · <a href="https://www.irs.gov/businesses/international-businesses/us-withholding-agent-frequently-asked-questions" target="_blank" rel="noopener">IRS: U.S. withholding agent FAQ</a></li>
+<li><a href="https://li-public.fmcsa.dot.gov/" target="_blank" rel="noopener">FMCSA L&amp;I (Licensing &amp; Insurance)</a> · <a href="https://mobile.fmcsa.dot.gov/app/" target="_blank" rel="noopener">FMCSA QCMobile</a></li>
+<li><a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-391" target="_blank" rel="noopener">49 CFR 391 (квалификация водителей, DQ file, ELP 391.11(b)(2))</a> · <a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-396/section-396.17" target="_blank" rel="noopener">49 CFR 396.17 (annual inspection)</a> · <a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-382" target="_blank" rel="noopener">49 CFR 382 (drug &amp; alcohol testing)</a></li>
+<li><a href="https://cvsa.org/news/elp-oosc-06252025" target="_blank" rel="noopener">CVSA: ELP — out-of-service с 25.06.2025</a> · <a href="https://www.fmcsa.dot.gov/regulations/enforcement/fmcsa-elp-guidance-roadside-policy-mc-see-2026-0002" target="_blank" rel="noopener">FMCSA ELP Roadside Policy (MC-SEE-2026-0002)</a></li>
+<li><a href="https://www.tax.ny.gov/bus/hut/huidx.htm" target="_blank" rel="noopener">New York HUT</a> · <a href="https://drive.ky.gov/Motor-Carriers/Pages/KYU.aspx" target="_blank" rel="noopener">Kentucky KYU</a> · <a href="https://www.mvd.newmexico.gov/commercial/commercial-vehicles/weight-distance/" target="_blank" rel="noopener">New Mexico Weight Distance</a> · <a href="https://www.oregon.gov/odot/mct/pages/weight-mile-tax-program-enrollment.aspx" target="_blank" rel="noopener">Oregon Weight-Mile Tax</a></li>
+<li><a href="https://www.tsa.gov/for-industry/twic" target="_blank" rel="noopener">TSA: TWIC</a> · <a href="https://nmfta.org/scac/" target="_blank" rel="noopener">NMFTA: SCAC</a></li>
+<li><a href="https://www.iftach.org/" target="_blank" rel="noopener">IFTA, Inc.</a></li>
+</ul>
+<h3>Индустрия</h3>
+<ul class="src">
+<li><a href="https://dispatchscore.com/guides/dispatch-service-fees/" target="_blank" rel="noopener">DispatchScore: How much do truck dispatch services charge?</a> (медиана 7%, среднее 7,3%, 2–12%)</li>
+<li><a href="https://www.carrier411.com/freightguard.cfm" target="_blank" rel="noopener">Carrier411: FreightGuard Reports</a></li>
+<li><a href="https://tiawatchdog.com/faq" target="_blank" rel="noopener">TIA Watchdog FAQ</a></li>
+<li><a href="https://highway.com/" target="_blank" rel="noopener">Highway</a> · <a href="https://rmis.com/" target="_blank" rel="noopener">RMIS</a> · <a href="https://mycarrierpackets.com/" target="_blank" rel="noopener">MyCarrierPackets</a> · <a href="https://carrierassure.com/" target="_blank" rel="noopener">Carrier Assure</a></li>
+<li><a href="https://www.dat.com/solutions/dispatch-load-board" target="_blank" rel="noopener">DAT: Dispatch Load Board</a> · <a href="https://one.support.dat.com/9-resources-52e74931/carrier-requirements-for-dat-services-7e1dff96" target="_blank" rel="noopener">DAT: Carrier Requirements (third-party dispatchers)</a></li>
+<li><a href="https://www.payoneer.com/receiving-accounts/" target="_blank" rel="noopener">Payoneer: Receiving accounts</a> · <a href="https://wise.com/" target="_blank" rel="noopener">Wise</a> (доступность для КР проверять на сайте)</li>
+<li><a href="https://www.dat.com/" target="_blank" rel="noopener">DAT</a> · <a href="https://truckstop.com/" target="_blank" rel="noopener">Truckstop</a></li>
+</ul>
+<p class="disc">Источники проверены в ноябре 2026. Ссылки на компании даны для удобства, это не реклама и не рекомендация.</p>
+</section>
+</main>
+</div>
+<footer>UNDER · <a href="https://under.kg">under.kg</a> · <a href="https://dispatch.under.kg">ollie TMS</a> · Учебный обзор, не юридическая консультация.</footer>
+<script>
+(function(){
+var G=[
+["Additional insured","доп. застрахованный","Когда брокер или склад вписан в полис как дополнительно застрахованная сторона. Иногда требуют вместо или вместе с certificate holder."],
+["Annual inspection","ежегодный техосмотр","Обязательный раз в год осмотр трака и трейлера (49 CFR 396.17) с отчётом или наклейкой."],
+["Apportioned plates","номера IRP","Номера трака, распределённые по штатам через IRP. В cab card указаны штаты и вес."],
+["Certificate holder","держатель сертификата","Тот, на чьё имя страховой агент выпускает COI (например, брокер). Так брокер получает уведомления, если полис отменят."],
+["Consortium (C/TPA)","программа тестов","Компания, которая ведёт программу тестов на наркотики и алкоголь для owner-operator и маленьких перевозчиков."],
+["DQ file","папка водителя","Driver Qualification file: документы о квалификации каждого водителя (49 CFR 391.51). Ведёт перевозчик."],
+["ELP (English Language Proficiency)","знание английского","Требование 49 CFR 391.11(b)(2): водитель должен говорить и читать по-английски. С 25.06.2025 нарушение — out-of-service."],
+["E&O insurance","страховка ошибок","Errors & Omissions: страховка от претензий за профессиональные ошибки. Для диспетчера не обязательна по закону."],
+["General liability (GL)","общая ответственность","Страховка от ущерба, не связанного с ездой (например, на складе). Некоторые брокеры её просят."],
+["HVUT (Form 2290)","налог на тяжёлые машины","Federal Heavy Vehicle Use Tax для машин от 55 000 lbs. Подтверждение — штампованный Schedule 1."],
+["Kentucky KYU","налог Кентукки","Лицензия и квартальный налог за мили для машин свыше 59 999 lbs в Кентукки."],
+["L&I","лицензии и страховки FMCSA","Licensing & Insurance (li-public.fmcsa.dot.gov): история authority, страховки на файле, BOC-3."],
+["LOA / POA (Letter of Authority)","доверенность","Письмо перевозчика, что диспетчер вправе вести переговоры и подписывать rate con от его имени."],
+["Macropoint / Trucker Tools","трекинг для брокеров","Приложения и сервисы, через которые брокер видит местоположение трака во время рейса."],
+["MVR","история вождения","Motor Vehicle Record: выписка о нарушениях и правах водителя. Входит в DQ file."],
+["NY HUT","налог Нью-Йорка","Highway Use Tax штата Нью-Йорк для траков от 18 000 lbs: регистрация, наклейка, отчёты."],
+["OS&D","повреждения / недостача","Over, Short & Damaged: отметки о лишнем, недостающем или повреждённом грузе при разгрузке."],
+["Oregon weight-mile","налог Орегона","Налог за мили и вес для машин свыше 26 000 lbs в Орегоне; регистрация до въезда."],
+["Physical damage","страховка своей техники","Страховка трака и трейлера самого перевозчика. Обычно её требует лизинг."],
+["QCMobile","приложение FMCSA","Официальное мобильное приложение FMCSA для проверки перевозчиков и брокеров."],
+["Schedule 1 (2290)","подтверждение HVUT","Штампованная IRS страница формы 2290 — доказательство уплаты налога, нужна для регистрации."],
+["SCAC","код перевозчика","Standard Carrier Alpha Code — 4-буквенный код от NMFTA. Нужен некоторым шипперам, в интермодале и на границе."],
+["TWIC","пропуск в порты","Transportation Worker Identification Credential от TSA — нужен для въезда в порты и некоторые объекты."],
+["Voided check","погашенный чек","Чек со словом VOID — показывает реквизиты счёта для оплаты."],
+["W-8BEN / W-8BEN-E","форма для иностранцев","Формы IRS, где иностранец подтверждает, что он не US person. W-8BEN — для физлиц (в т. ч. ИП), W-8BEN-E — для юрлиц. Отдаются плательщику, не в IRS."],
+["Weight-distance tax (NM)","налог Нью-Мексико","Налог за вес и мили в Нью-Мексико для машин свыше 26 000 lbs; электронный пермит на каждую машину."],
+["Accessorials","доплаты","Дополнительные платежи сверх основной ставки: detention, layover, lumper, TONU, extra stop, tarp pay и т. д. Должны быть записаны в rate con."],
+["All-in rate","вся ставка","Общая сумма за груз, включая fuel surcharge. На бирже в spot-грузах обычно указана именно она."],
+["Appointment","время по записи","Точное время, на которое назначена погрузка или разгрузка. Опоздаешь, и могут перенести на другой день."],
+["Authority (Operating Authority)","разрешение","Разрешение FMCSA возить грузы за деньги между штатами. Именно его обозначает MC-номер."],
+["Backhaul","обратный груз","Груз на обратную дорогу, обычно к дому водителя."],
+["BIPD / Auto Liability","страховка ответственности","Страховка на случай, если трак нанесёт ущерб людям или имуществу. Минимум FMCSA для обычного груза на траке от 10 001 lbs составляет $750 000."],
+["BOC-3","агенты по штатам","Форма, где назначены process agents в каждом штате для приёма судебных бумаг. Подаётся через blanket company."],
+["BOL (Bill of Lading)","накладная","Главный документ на груз: что, сколько, откуда, куда. Водитель подписывает его при погрузке."],
+["Bona fide agent","настоящий агент","Агент, который работает на перевозчика по письменному договору, получает деньги от него и не распоряжается деньгами за фрахт. Так диспетчер может работать без брокерской лицензии."],
+["Box truck","бокс-трак","Грузовик с кузовом-будкой, без отдельного трейлера."],
+["Broker","брокер","Посредник с брокерской лицензией FMCSA и bond $75 000. Получает груз от шиппера и нанимает перевозчика."],
+["Broker–Carrier Agreement","договор с брокером","Общий договор между брокером и перевозчиком. Rate con — это заказ на конкретный груз по этому договору."],
+["Cargo insurance","страховка груза","Страхует сам груз. Для обычных грузов федеральный закон её не требует, но брокеры почти всегда требуют."],
+["Carrier","перевозчик","Компания с траком и authority, которая перевозит груз."],
+["Carrier Assure","сервис проверки","Сервис, который оценивает риски перевозчика для брокеров."],
+["Carrier packet","пакет перевозчика","Анкета и документы для регистрации перевозчика у брокера: W-9, COI, MC, банк и т. д."],
+["CDL","коммерческие права","Commercial Driver's License, права для вождения тяжёлого коммерческого транспорта."],
+["Check call","контрольный звонок","Отчёт брокеру (или от водителя тебе): где трак, какой статус, ETA."],
+["Clearinghouse","база нарушений","Drug & Alcohol Clearinghouse FMCSA: база нарушений водителей с CDL по наркотикам и алкоголю. Проверка при найме и потом раз в год."],
+["COI (Certificate of Insurance)","сертификат страховки","Документ от страхового агента, что полис действует, с лимитами (liability, cargo). Брокер вписан туда как certificate holder."],
+["Consignee","получатель","То же, что receiver: тот, кому везут груз."],
+["Contract rate","контрактная ставка","Заранее согласованная ставка на регулярные перевозки. Противоположность spot."],
+["CSA / SMS","баллы безопасности","Программа FMCSA Compliance, Safety, Accountability. В системе SMS видны показатели по инспекциям и авариям."],
+["Deadhead (DH)","пустой пробег","Мили без груза, например до точки погрузки. Не оплачиваются."],
+["Detention","оплата ожидания","Доплата, если водителя держат у шиппера или ресивера дольше бесплатного времени. Сколько часов бесплатно и сколько платят, смотри в rate con."],
+["Dispatcher","диспетчер","Ищет грузы и ведёт рейсы для перевозчика за процент или фиксированную плату."],
+["DNU (Do Not Use)","«не использовать»","Внутренний чёрный список брокера. Перевозчика из него больше не берут."],
+["DOT number (USDOT)","номер DOT","Номер компании в FMCSA. По нему видна история безопасности и инспекций."],
+["Double brokering","двойной брокеринг","Тайная передача взятого груза другому перевозчику или перепродажа без лицензии. Это мошенничество и гарантированная потеря репутации."],
+["Drop and hook","оставил и забрал","Водитель оставляет один трейлер и забирает уже загруженный. Быстрее, чем live load."],
+["Dry van","сухой фургон","Закрытый трейлер без холодильника (часто 53 фута). Самый распространённый тип."],
+["EIN","налоговый номер","Employer Identification Number, налоговый номер компании в США. Указывается в W-9."],
+["ELD","электронный журнал","Electronic Logging Device: автоматически записывает время вождения и отдыха водителя."],
+["ETA","ожидаемое прибытие","Estimated Time of Arrival, когда трак будет на месте."],
+["Factoring","факторинг","Продажа счёта брокеру факторинговой компании: деньги сразу, минус комиссия."],
+["Flatbed","платформа","Открытый трейлер без стен для стройматериалов, металла и техники. Часто нужны tarps и straps."],
+["FMCSA","регулятор","Federal Motor Carrier Safety Administration, федеральный регулятор грузоперевозок США."],
+["FreightGuard","отчёты брокеров","Отчёты о проблемах с перевозчиками в сервисе Carrier411. У перевозчика 72 часа на ответ."],
+["FTL / LTL","полный / сборный","FTL (Full Truckload): весь трейлер под один груз. LTL: груз занимает только часть трейлера."],
+["Fuel surcharge (FSC)","топливная надбавка","Часть ставки, которая зависит от цены топлива."],
+["GVWR","полная масса","Gross Vehicle Weight Rating, разрешённая полная масса. От неё зависят требования (например, порог 10 001 lbs)."],
+["Hazmat","опасный груз","Опасные материалы. Нужна отметка в CDL и большая страховка."],
+["Highway","сервис проверки","Платформа, через которую брокеры проверяют личность и надёжность перевозчика."],
+["HOS (Hours of Service)","часы работы","Правила: не больше 11 часов вождения, окно 14 часов, перерыв 30 минут после 8 часов езды, лимит 60/70 часов."],
+["Hostage load","груз в заложниках","Когда перевозчик не отдаёт груз и требует больше денег. Серьёзное нарушение, по нему пишут отчёты."],
+["Hotshot","хотшот","Пикап с платформой-прицепом для небольших срочных грузов."],
+["IFTA","топливный налог","International Fuel Tax Agreement: квартальный отчёт по топливному налогу между штатами."],
+["Invoice","счёт","Счёт брокеру за груз. Обычно к нему прилагают rate con и POD."],
+["IRP","номера для штатов","International Registration Plan: регистрация (apportioned plates) для работы в нескольких штатах; в кабине cab card."],
+["Lane","направление","Маршрут «откуда → куда», например Dallas, TX → Atlanta, GA."],
+["Layover","простой с ночёвкой","Оплата, если водитель вынужден ждать до следующего дня из-за шиппера или ресивера."],
+["Line-haul","основная ставка","Ставка за перевозку без доплат (accessorials)."],
+["Live load / live unload","погрузка при водителе","Водитель ждёт, пока его загрузят или разгрузят."],
+["Load board","биржа грузов","Сайт или приложение с объявлениями о грузах: DAT, Truckstop и т. д."],
+["Lumper","грузчики","Сторонние грузчики на складе, которые разгружают трак за плату. Кто и как платит, должно быть в rate con. Обязательно бери квитанцию."],
+["MC number","номер MC","Номер operating authority FMCSA. По нему брокеры проверяют перевозчика."],
+["MCS-150","обновление данных","Форма обновления данных компании в FMCSA, раз в 24 месяца."],
+["MyCarrierPackets","сервис пакетов","Сервис, где хранится профиль перевозчика для брокеров."],
+["New Entrant","новичок FMCSA","Первые 18 месяцев нового перевозчика, с обязательным safety audit в первые 12 месяцев."],
+["NOA (Notice of Assignment)","уведомление о факторинге","Письмо брокеру: платите не перевозчику, а факторингу."],
+["OOS (Out-of-Service)","запрет движения","Инспектор запрещает траку или водителю ехать, пока нарушение не исправят."],
+["Owner-operator","владелец-водитель","Водитель со своим траком, часто со своей компанией и MC."],
+["POD (Proof of Delivery)","доказательство доставки","Подписанный получателем BOL. Без него не платят."],
+["Power only","только тягач","Перевозчик даёт только тягач, а трейлер принадлежит брокеру или шипперу."],
+["Quick pay","быстрая оплата","Брокер платит быстрее обычного срока за процент."],
+["Rate con (Rate Confirmation)","подтверждение ставки","Договор на конкретный груз: ставка, адреса, время, условия. Читать целиком!"],
+["Receiver","получатель","Место или компания, куда везут груз."],
+["Reefer","рефрижератор","Трейлер-холодильник для продуктов и лекарств. Температура указана в rate con."],
+["RMIS","сервис онбординга","Платформа брокеров для регистрации перевозчиков и мониторинга страховки."],
+["RPM (Rate per mile)","ставка за милю","Ставка, делённая на мили. Считай вместе с deadhead."],
+["SAFER","карточка FMCSA","Публичная система FMCSA, где можно проверить статус любой компании по DOT или MC."],
+["Seal","пломба","Пломба на дверях трейлера. Номер записан в BOL."],
+["Shipper","грузоотправитель","Компания, у которой есть груз для отправки."],
+["Spot market","разовый рынок","Разовые грузы по текущей цене, например с биржи. Противоположность contract."],
+["Step deck","низкая платформа","Платформа со ступенькой для более высоких грузов."],
+["Tarp","тент","Брезент для накрытия груза на flatbed. Часто за него есть доплата (tarp pay)."],
+["Team drivers","команда","Два водителя по очереди, чтобы трак почти не стоял."],
+["TIA Watchdog","отчёты TIA","Система отчётов ассоциации брокеров TIA о серьёзных нарушениях: double brokering, кража, identity theft."],
+["TMS","система управления","Transportation Management System, программа для грузов и рейсов. У нас это ollie."],
+["TONU (Truck Order Not Used)","компенсация за отмену","Выплата перевозчику, если груз отменили, когда трак уже выехал или приехал. Сумма должна быть в rate con."],
+["UCR","ежегодная регистрация","Unified Carrier Registration: ежегодная регистрация и сбор для перевозчиков между штатами."],
+["W-9","налоговая форма","Форма IRS для американских лиц: название и EIN. Её просит каждый брокер у перевозчика. Диспетчер-иностранец W-9 не заполняет (см. W-8BEN)."]
+];
+G.sort(function(a,b){return a[0].localeCompare(b[0])});
+var gl=document.getElementById('gl'),q=document.getElementById('q'),cnt=document.getElementById('count'),lt=document.getElementById('letters'),cur='';
+function esc(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+function norm(s){return s.toLowerCase().replace(/ё/g,'е')}
+function render(){
+  var v=norm(q.value.trim()),h='',n=0;
+  G.forEach(function(g){
+    if(cur&&g[0][0].toUpperCase()!==cur)return;
+    if(v&&norm(g.join(' ')).indexOf(v)<0)return;
+    n++;h+='<div class="t"><dt>'+esc(g[0])+' <small>· '+esc(g[1])+'</small></dt><dd>'+esc(g[2])+'</dd></div>';
+  });
+  gl.innerHTML=h||'<p>Ничего не найдено. Попробуй другое слово.</p>';
+  cnt.textContent='Показано терминов: '+n+' из '+G.length;
+}
+var L=[];G.forEach(function(g){var c=g[0][0].toUpperCase();if(L.indexOf(c)<0)L.push(c)});
+function mk(label,val){var b=document.createElement('button');b.type='button';b.textContent=label;if(val===cur)b.className='on';b.onclick=function(){cur=val;[].forEach.call(lt.children,function(x){x.className=''});b.className='on';render()};lt.appendChild(b)}
+mk('Все','');L.forEach(function(c){mk(c,c)});
+q.addEventListener('input',function(){if(q.value&&cur){cur='';[].forEach.call(lt.children,function(x,i){x.className=i?'':'on'})}render()});render();
+var links=[].slice.call(document.querySelectorAll('nav.toc a')),toc=document.getElementById('toc'),btn=document.getElementById('tocbtn');
+btn.onclick=function(){var o=toc.classList.toggle('open');btn.setAttribute('aria-expanded',o)};
+links.forEach(function(a){a.addEventListener('click',function(){toc.classList.remove('open');btn.setAttribute('aria-expanded','false')})});
+if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)})}})},{rootMargin:'-20% 0px -70% 0px'});document.querySelectorAll('main section').forEach(function(s){io.observe(s)})}
+var boxes=document.querySelectorAll('#checklist input');
+try{var st=JSON.parse(localStorage.getItem('dx-check')||'[]');boxes.forEach(function(b,i){b.checked=!!st[i];b.onchange=function(){var a=[];boxes.forEach(function(x){a.push(x.checked)});localStorage.setItem('dx-check',JSON.stringify(a))}})}catch(e){}
+var ob=document.querySelectorAll('#onb input');
+try{var so=JSON.parse(localStorage.getItem('dx-onb')||'[]');ob.forEach(function(b,i){b.checked=!!so[i];b.onchange=function(){var a=[];ob.forEach(function(x){a.push(x.checked)});localStorage.setItem('dx-onb',JSON.stringify(a))}})}catch(e){}
+document.getElementById('printonb').onclick=function(){document.body.classList.add('p-onb');window.print();setTimeout(function(){document.body.classList.remove('p-onb')},500)};
+window.addEventListener('afterprint',function(){document.body.classList.remove('p-onb')});
+document.getElementById('resetonb').onclick=function(){ob.forEach(function(x){x.checked=false});localStorage.removeItem('dx-onb')};
+
+document.querySelectorAll('.tw table').forEach(function(t){var rows=t.querySelectorAll('tr');if(!rows.length)return;var h=[].map.call(rows[0].children,function(c){return c.textContent.trim()});if(rows[0].querySelector('td'))return;rows[0].className='hd';t.classList.add('st');[].forEach.call(rows,function(r,i){if(!i)return;[].forEach.call(r.children,function(c,j){if(c.tagName==='TD'&&h[j])c.setAttribute('data-label',h[j])})})});
+})();
+</script>
+</body>
+</html>

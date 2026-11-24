@@ -3,6 +3,7 @@ use ollie::{
     ai::OllamaClient,
     config::Config,
     db::DbClient,
+    firebase::FirebaseAuth,
     geocoding::GeocodingClient,
     pipeline::{spawn_pipeline, spawn_geocoding_pipeline, spawn_routing_pipeline},
     routing::RoutingClient,
@@ -50,27 +51,35 @@ async fn main() -> anyhow::Result<()> {
             .expect("Failed to build Webauthn"),
     );
 
+    let firebase = Arc::new(FirebaseAuth::new(config.firebase_project_id.clone()));
+    
     let auth_challenge_store: Arc<dashmap::DashMap<uuid::Uuid, _>> = Arc::new(dashmap::DashMap::new());
     let reg_challenge_store: Arc<dashmap::DashMap<uuid::Uuid, _>> = Arc::new(dashmap::DashMap::new());
+    let elearning_sessions: Arc<dashmap::DashMap<String, (String, std::time::Instant)>> = Arc::new(dashmap::DashMap::new());
 
     let auth_store_sweep = auth_challenge_store.clone();
     let reg_store_sweep = reg_challenge_store.clone();
+    let elearning_sweep = elearning_sessions.clone();
     tokio::spawn(async move {
         loop {
             tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
             let cutoff = std::time::Instant::now() - std::time::Duration::from_secs(300);
             auth_store_sweep.retain(|_, (_, ts)| *ts > cutoff);
             reg_store_sweep.retain(|_, (_, ts)| *ts > cutoff);
+            // Elearning sessions: 24 hour TTL
+            let elearning_cutoff = std::time::Instant::now() - std::time::Duration::from_secs(86400);
+            elearning_sweep.retain(|_, (_, ts)| *ts > elearning_cutoff);
         }
     });
 
     let state = AppState {
-        db, store, ai, geocoding, ors,
+        db, store, ai, geocoding, ors, firebase,
         pipeline_tx, geocoding_tx, routing_tx,
         config: config.clone(),
         webauthn,
         auth_challenge_store,
         reg_challenge_store,
+        elearning_sessions,
     };
 
     // Bind before anything that scales with data volume — `startup::serve` owns

@@ -5,6 +5,7 @@ pub mod refresh_tokens;
 pub mod utils;
 pub mod version;
 pub mod blobs;
+pub mod elearning;
 pub mod fleet_portal;
 pub mod driver_portal;
 pub mod drivers;
@@ -698,6 +699,7 @@ pub fn router(state: AppState) -> Router {
         .merge(fleet_user_auth)
         .merge(fleet_user_public)
         .merge(driver_portal)
+        .merge(elearning::elearning_router(&state))
         .merge(oauth::router())
         .nest_service("/driver", driver_static)
         .nest_service("/fleet", fleet_static)

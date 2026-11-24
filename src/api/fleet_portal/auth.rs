@@ -74,9 +74,9 @@ pub(crate) async fn verify_fleet_user_password(
 // --- Request/Response types ---
 
 #[derive(Debug, Deserialize, ToSchema)]
-pub struct LoginRequest {
-    pub email: String,
-    pub password: String,
+pub struct FirebaseLoginRequest {
+    /// Firebase ID token
+    pub id_token: String,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -85,9 +85,11 @@ pub struct LoginResponse {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-pub struct LockResponse {
-    pub error: String,
-    pub locked_until: String,
+pub struct FirebaseConfigResponse {
+    pub api_key: String,
+    pub auth_domain: String,
+    pub project_id: String,
+    pub app_id: String,
 }
 
 // --- Helpers ---
@@ -98,78 +100,96 @@ fn normalize_email(email: &str) -> String {
 
 // --- Handlers ---
 
-/// Login as a fleet_user using email and password. Returns a JWT on success.
+/// Get Firebase configuration for the frontend SDK (unauthenticated).
+#[utoipa::path(
+    get,
+    path = "/fleet/api/v1/firebase-config",
+    responses(
+        (status = 200, description = "Firebase config", body = FirebaseConfigResponse),
+    ),
+    tag = "fleet-auth"
+)]
+pub async fn firebase_config(
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, AppError> {
+    Ok(Json(FirebaseConfigResponse {
+        api_key: state.config.firebase_api_key.clone(),
+        auth_domain: state.config.firebase_auth_domain.clone(),
+        project_id: state.config.firebase_project_id.clone(),
+        app_id: state.config.firebase_app_id.clone(),
+    }))
+}
+
+/// Login as a fleet_user using Firebase ID token. Maps to ollie fleet_user by email.
 #[utoipa::path(
     post,
     path = "/fleet/auth/login",
-    request_body(content = LoginRequest, description = "Fleet user credentials"),
+    request_body(content = FirebaseLoginRequest, description = "Firebase ID token"),
     responses(
-        (status = 200, description = "JWT token", body = LoginResponse),
-        (status = 401, description = "Invalid credentials or account inactive"),
-        (status = 423, description = "Account locked due to too many failed attempts", body = LockResponse),
+        (status = 200, description = "Firebase token accepted (passthrough)", body = LoginResponse),
+        (status = 401, description = "Invalid Firebase token or user not found"),
     ),
     tag = "fleet-auth"
 )]
 pub async fn login(
     State(state): State<AppState>,
-    Json(req): Json<LoginRequest>,
+    Json(req): Json<FirebaseLoginRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    let email = normalize_email(&req.email);
+    // Verify Firebase token
+    let firebase_claims = state.firebase.verify_id_token(&req.id_token).await
+        .map_err(|_| {
+            tracing::warn!("firebase token verification failed during login");
+            AppError::Unauthorized
+        })?;
 
-    let fleet_user_opt = state.db.get_fleet_user_by_email(&email).await?;
-    let fleet_user = match fleet_user_opt {
-        Some(d) => d,
-        None => {
-            // Run bcrypt on a dummy hash to equalise timing for unknown vs wrong-password (#107).
-            let pwd = req.password.clone();
-            let _ = tokio::task::spawn_blocking(move || bcrypt::verify(&pwd, dummy_hash())).await;
-            return Err(AppError::Unauthorized);
+    let email = normalize_email(&firebase_claims.email);
+
+    // Bootstrap: if no fleet users exist and bootstrap email is set, create owner
+    let user_count = state.db.count_fleet_users().await?;
+    if user_count == 0 {
+        if let Some(bootstrap_email) = &state.config.bootstrap_owner_email {
+            let bootstrap_normalized = normalize_email(bootstrap_email);
+            if email == bootstrap_normalized {
+                tracing::info!(email = %email, "bootstrap: creating owner account from firebase login");
+                let now = Utc::now();
+                let id = Uuid::new_v4();
+                let record = FleetUserRecord {
+                    id,
+                    email: email.clone(),
+                    name: firebase_claims.name.clone().unwrap_or_else(|| email.clone()),
+                    status: FleetUserStatus::Active,
+                    role: Role::Owner,
+                    extra_scopes: Vec::new(),
+                    created_at: now,
+                    updated_at: now,
+                };
+                state.db.insert_fleet_user(&record).await?;
+                
+                // No password-based credentials needed for Firebase users
+                tracing::info!(fleet_user_id = %id, "bootstrap owner created");
+            }
         }
-    };
+    }
+
+    // Look up fleet_user by email
+    let fleet_user = state.db.get_fleet_user_by_email(&email).await?
+        .ok_or_else(|| {
+            tracing::warn!(email = %email, "firebase user not found in fleet_users");
+            AppError::Unauthorized
+        })?;
 
     if fleet_user.status == FleetUserStatus::Inactive {
         return Err(AppError::Unauthorized);
     }
 
-    let mut creds = state.db.get_fleet_user_credentials(fleet_user.id).await?
-        .ok_or(AppError::Unauthorized)?;
+    tracing::info!(fleet_user_id = %fleet_user.id, email = %email, "fleet user firebase login succeeded");
 
-    // Check lockout
-    if let Some(locked_until) = creds.locked_until {
-        if locked_until > Utc::now() {
-            return Ok((
-                StatusCode::LOCKED,
-                Json(LockResponse {
-                    error: "account locked".into(),
-                    locked_until: locked_until.to_rfc3339(),
-                }),
-            ).into_response());
-        }
-    }
-
-    // Verify password + maintain the failed-attempt lockout (shared with /oauth/authorize).
-    if !verify_fleet_user_password(&state, &mut creds, &req.password).await? {
-        return Err(AppError::Unauthorized);
-    }
-
-    let token = encode_fleet_user_jwt(fleet_user.id, creds.token_version, &state.config.fleet_jwt_secret)?;
-
-    tracing::info!(fleet_user_id = %fleet_user.id, "fleet user login succeeded");
-
-    let issued = refresh_tokens::issue(
-        &state.db, "fleet_user", fleet_user.id, None, creds.token_version, Utc::now(),
-    ).await?;
-    let cookie = refresh_tokens::set_cookie_header(&issued.secret, state.config.cookie_secure);
-
-    let mut response = (StatusCode::OK, Json(LoginResponse { token })).into_response();
-    response.headers_mut().insert(
-        SET_COOKIE,
-        cookie.parse().map_err(|_| AppError::Internal("bad cookie".into()))?,
-    );
-    Ok(response)
+    // Return the Firebase token itself — the middleware already knows how to verify it
+    Ok(Json(LoginResponse { token: req.id_token }))
 }
 
-/// Refresh a fleet user JWT using the httpOnly refresh-token cookie.
+/// Refresh endpoint is deprecated for Firebase auth (Firebase handles token refresh).
+/// Kept for backwards compatibility with any existing refresh-token cookies.
 #[utoipa::path(
     post,
     path = "/fleet/auth/refresh",
@@ -180,147 +200,14 @@ pub async fn login(
     tag = "fleet-auth"
 )]
 pub async fn refresh(
-    State(state): State<AppState>,
-    headers: HeaderMap,
+    State(_state): State<AppState>,
+    _headers: HeaderMap,
 ) -> Result<impl IntoResponse, AppError> {
-    let secret = refresh_tokens::read_cookie(&headers).ok_or(AppError::Unauthorized)?;
-
-    let hash = refresh_tokens::hash_token(&secret);
-    let row = state.db.get_refresh_token_by_hash(&hash).await?
-        .ok_or(AppError::Unauthorized)?;
-    if row.subject_type != "fleet_user" {
-        return Err(AppError::Unauthorized);
-    }
-    let creds = state.db.get_fleet_user_credentials(row.subject_id).await?
-        .ok_or(AppError::Unauthorized)?;
-
-    if let Some(locked_until) = creds.locked_until {
-        if locked_until > Utc::now() {
-            return Err(AppError::Unauthorized);
-        }
-    }
-
-    // Reject inactive accounts before rotating, so an inactive fleet_user's
-    // refresh attempt doesn't needlessly consume their token.
-    let fleet_user = state.db.get_fleet_user_by_id(row.subject_id).await
-        .map_err(|_| AppError::Unauthorized)?;
-    if fleet_user.status == FleetUserStatus::Inactive {
-        return Err(AppError::Unauthorized);
-    }
-
-    match refresh_tokens::rotate(&state.db, &secret, creds.token_version, Utc::now()).await? {
-        refresh_tokens::RotateResult::Rotated(next) => {
-            let token = encode_fleet_user_jwt(row.subject_id, creds.token_version, &state.config.fleet_jwt_secret)?;
-            let cookie = refresh_tokens::set_cookie_header(&next.secret, state.config.cookie_secure);
-            let mut response = Json(LoginResponse { token }).into_response();
-            response.headers_mut().insert(
-                SET_COOKIE,
-                cookie.parse().map_err(|_| AppError::Internal("bad cookie".into()))?,
-            );
-            Ok(response)
-        }
-        _ => Err(AppError::Unauthorized),
-    }
+    // Firebase tokens are refreshed client-side by the Firebase SDK
+    Err(AppError::Unauthorized)
 }
 
-// --- First-run owner setup wizard (UNauthenticated) ---
-
-#[derive(Debug, Serialize, ToSchema)]
-pub struct SetupStatusResponse {
-    pub needs_setup: bool,
-}
-
-#[derive(Debug, Deserialize, ToSchema)]
-pub struct SetupRequest {
-    pub email: String,
-    pub name: String,
-    pub password: String,
-}
-
-/// Report whether first-run setup is needed (zero users exist). Unauthenticated:
-/// it is only meaningful, and the setup endpoint only open, while the table is empty.
-#[utoipa::path(
-    get,
-    path = "/fleet/api/v1/setup/status",
-    responses((status = 200, description = "Whether first-run setup is needed", body = SetupStatusResponse)),
-    tag = "fleet-auth"
-)]
-pub async fn setup_status(
-    State(state): State<AppState>,
-) -> Result<impl IntoResponse, AppError> {
-    let needs_setup = state.db.count_fleet_users().await? == 0;
-    Ok(Json(SetupStatusResponse { needs_setup }))
-}
-
-/// Create the first user with `role=owner`. Unauthenticated, guarded by
-/// `count_fleet_users() == 0` — the guard slams shut the instant any user exists,
-/// returning `409 Conflict`. On success the new owner is logged straight in
-/// (token + refresh cookie), the same shape as `/fleet/auth/login`.
-#[utoipa::path(
-    post,
-    path = "/fleet/setup",
-    request_body(content = SetupRequest, description = "First owner account"),
-    responses(
-        (status = 200, description = "Owner created; logged in", body = LoginResponse),
-        (status = 409, description = "Setup already completed — a user already exists"),
-    ),
-    tag = "fleet-auth"
-)]
-pub async fn setup(
-    State(state): State<AppState>,
-    Json(req): Json<SetupRequest>,
-) -> Result<impl IntoResponse, AppError> {
-    if state.db.count_fleet_users().await? != 0 {
-        return Err(AppError::Conflict("setup already completed".into()));
-    }
-
-    let email = normalize_email(&req.email);
-    let now = Utc::now();
-    let id = Uuid::new_v4();
-    let record = FleetUserRecord {
-        id,
-        email,
-        name: req.name,
-        status: FleetUserStatus::Active,
-        role: Role::Owner,
-        extra_scopes: Vec::new(),
-        created_at: now,
-        updated_at: now,
-    };
-    state.db.insert_fleet_user(&record).await?;
-
-    let pw = req.password;
-    let password_hash = tokio::task::spawn_blocking(move || bcrypt::hash(&pw, 12u32))
-        .await
-        .map_err(|e| AppError::Internal(e.to_string()))?
-        .map_err(|e| AppError::Internal(e.to_string()))?;
-    let creds = FleetUserCredentials {
-        fleet_user_id: id,
-        password_hash,
-        token_version: 0,
-        failed_attempts: 0,
-        locked_until: None,
-        updated_at: now,
-    };
-    state.db.upsert_fleet_user_credentials(&creds).await?;
-
-    tracing::info!(fleet_user_id = %id, "first-run setup: owner account created");
-
-    // Log the new owner straight in (same shape as login).
-    let token = encode_fleet_user_jwt(id, creds.token_version, &state.config.fleet_jwt_secret)?;
-    let issued = refresh_tokens::issue(
-        &state.db, "fleet_user", id, None, creds.token_version, Utc::now(),
-    ).await?;
-    let cookie = refresh_tokens::set_cookie_header(&issued.secret, state.config.cookie_secure);
-    let mut response = (StatusCode::OK, Json(LoginResponse { token })).into_response();
-    response.headers_mut().insert(
-        SET_COOKIE,
-        cookie.parse().map_err(|_| AppError::Internal("bad cookie".into()))?,
-    );
-    Ok(response)
-}
-
-/// Revoke the caller's refresh-token family and clear the cookie.
+/// Logout (client-side only for Firebase; this endpoint just clears any legacy cookies).
 #[utoipa::path(
     post,
     path = "/fleet/auth/logout",
@@ -328,20 +215,10 @@ pub async fn setup(
     tag = "fleet-auth"
 )]
 pub async fn logout(
-    State(state): State<AppState>,
-    headers: HeaderMap,
+    State(_state): State<AppState>,
+    _headers: HeaderMap,
 ) -> Result<impl IntoResponse, AppError> {
-    if let Some(secret) = refresh_tokens::read_cookie(&headers) {
-        let hash = refresh_tokens::hash_token(&secret);
-        if let Some(row) = state.db.get_refresh_token_by_hash(&hash).await? {
-            state.db.revoke_refresh_token_family(row.family_id, Utc::now()).await?;
-        }
-    }
-    let cookie = refresh_tokens::clear_cookie_header(state.config.cookie_secure);
-    let mut response = StatusCode::OK.into_response();
-    response.headers_mut().insert(
-        SET_COOKIE,
-        cookie.parse().map_err(|_| AppError::Internal("bad cookie".into()))?,
-    );
-    Ok(response)
+    // Firebase logout is handled client-side by calling firebase.auth().signOut()
+    // This endpoint exists for backwards compatibility only
+    Ok(StatusCode::OK)
 }

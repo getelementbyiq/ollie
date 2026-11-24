@@ -51,10 +51,8 @@ pub fn auth_router() -> Router<AppState> {
         .route("/fleet/auth/login", post(auth::login))
         .route("/fleet/auth/refresh", post(auth::refresh))
         .route("/fleet/auth/logout", post(auth::logout))
-        // First-run owner setup wizard — UNauthenticated (table is empty), guarded
-        // by count_fleet_users() == 0. Deliberately outside require_fleet_user_auth.
-        .route("/fleet/api/v1/setup/status", get(auth::setup_status))
-        .route("/fleet/setup", post(auth::setup))
+        // Firebase configuration for frontend SDK (unauthenticated)
+        .route("/fleet/api/v1/firebase-config", get(auth::firebase_config))
 }
 
 pub fn data_router(state: &AppState) -> Router<AppState> {

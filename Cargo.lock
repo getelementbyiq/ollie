@@ -4352,6 +4352,7 @@ dependencies = [
  "rand 0.9.4",
  "reqwest",
  "rmcp",
+ "rsa",
  "serde",
  "serde_json",
  "sha2",

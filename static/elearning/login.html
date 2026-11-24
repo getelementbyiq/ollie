@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Learning Login — UNDER Dispatch</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            color: #1a202c;
+        }
+        p {
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .error.visible {
+            display: block;
+        }
+        button {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.875rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: #a0aec0;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>E-Learning Portal</h1>
+        <p>Sign in with your UNDER dispatch account to access training materials.</p>
+        
+        <div id="error" class="error"></div>
+        
+        <div id="firebaseui-auth-container"></div>
+        <button id="login-btn">Sign In with Google</button>
+        
+        <div class="footer">
+            Powered by UNDER Dispatch TMS
+        </div>
+    </div>
+
+    <script type="module">
+        // Fetch Firebase config from server
+        async function getFirebaseConfig() {
+            const resp = await fetch('/elearning/api/firebase-config');
+            return await resp.json();
+        }
+
+        // Initialize Firebase and handle auth
+        async function initFirebase() {
+            const config = await getFirebaseConfig();
+            
+            // Dynamically import Firebase SDK
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+            const { getAuth, signInWithPopup, GoogleAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            
+            const app = initializeApp({
+                apiKey: config.api_key,
+                authDomain: config.auth_domain,
+                projectId: config.project_id,
+                appId: config.app_id,
+            });
+            
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
+            
+            const btn = document.getElementById('login-btn');
+            const errorEl = document.getElementById('error');
+            
+            btn.addEventListener('click', async () => {
+                btn.disabled = true;
+                btn.textContent = 'Signing in...';
+                errorEl.classList.remove('visible');
+                
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    const idToken = await result.user.getIdToken();
+                    
+                    // Send token to server
+                    const resp = await fetch('/elearning/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_token: idToken }),
+                    });
+                    
+                    if (resp.ok) {
+                        // Redirect to index
+                        window.location.href = '/elearning/';
+                    } else {
+                        throw new Error('Authentication failed');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    errorEl.textContent = 'Sign-in failed. Please try again.';
+                    errorEl.classList.add('visible');
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In with Google';
+                }
+            });
+        }
+        
+        initFirebase().catch(err => {
+            console.error('Firebase init error:', err);
+            document.getElementById('error').textContent = 'Failed to initialize. Please refresh.';
+            document.getElementById('error').classList.add('visible');
+        });
+    </script>
+</body>
+</html>
