@@ -1,43 +1,45 @@
 import { saveToken } from '../utils/auth.js';
 import { loadMe, API_BASE, AUTH_BASE } from '../utils/api.js';
-import { fmtDate } from '../utils/format.js';
 import { clearEventsRefresh } from './events.js';
+
+// ─── Firebase Integration ────────────────────────────────────
+
+let firebaseApp = null;
+let firebaseAuth = null;
+
+async function initFirebase() {
+  if (firebaseApp) return;
+  
+  // Fetch Firebase config from server
+  const resp = await fetch(`${API_BASE}/firebase-config`);
+  const config = await resp.json();
+  
+  // Dynamically import Firebase SDK
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+  const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+  
+  firebaseApp = initializeApp({
+    apiKey: config.api_key,
+    authDomain: config.auth_domain,
+    projectId: config.project_id,
+    appId: config.app_id,
+  });
+  
+  firebaseAuth = getAuth(firebaseApp);
+}
 
 // ─── View/Auth toggle ────────────────────────────────────────
 
 export function showLogin() {
   document.getElementById('login-view').hidden = false;
   document.getElementById('app-shell').hidden = true;
-  // Default to the sign-in pane; showLoginOrSetup flips to setup if needed.
   const loginPane = document.getElementById('login-pane');
-  const setupPane = document.getElementById('setup-pane');
   if (loginPane) loginPane.hidden = false;
-  if (setupPane) setupPane.hidden = true;
   clearEventsRefresh();
 }
 
-export function showSetup() {
-  document.getElementById('login-view').hidden = false;
-  document.getElementById('app-shell').hidden = true;
-  const loginPane = document.getElementById('login-pane');
-  const setupPane = document.getElementById('setup-pane');
-  if (loginPane) loginPane.hidden = true;
-  if (setupPane) setupPane.hidden = false;
-  clearEventsRefresh();
-}
-
-// Show the setup pane when no users exist yet, otherwise the sign-in pane.
 export async function showLoginOrSetup() {
-  try {
-    const res = await fetch(`${API_BASE}/setup/status`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.needs_setup) {
-        showSetup();
-        return;
-      }
-    }
-  } catch (_) { /* fall through to login */ }
+  // Firebase-based auth: no setup wizard, always show Firebase login
   showLogin();
 }
 
@@ -52,111 +54,65 @@ function showAlert(el, cls, msg) {
   el.hidden = false;
 }
 
-// ─── Login + setup forms ─────────────────────────────────────
+// ─── Firebase Login ──────────────────────────────────────────
 // `enterApp` is supplied by app.js (it owns the router/render dispatch).
 
 export function initLoginForm(enterApp) {
-  const form = document.getElementById('login-form');
-  if (!form) return;
+  const btn = document.getElementById('firebase-signin-btn');
+  if (!btn) return;
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
+  btn.addEventListener('click', async () => {
     const alertEl = document.getElementById('login-alert');
-    const submitBtn = document.getElementById('login-submit');
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
     alertEl.hidden = true;
-    alertEl.className = 'alert';
-    alertEl.textContent = '';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Signing in…';
 
     try {
-      const res = await fetch(`${AUTH_BASE}/login`, {
+      await initFirebase();
+      const { signInWithPopup, GoogleAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+      
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(firebaseAuth, provider);
+      const idToken = await result.user.getIdToken();
+      
+      // Send Firebase token to server (server returns it as passthrough)
+      const resp = await fetch(`${AUTH_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ id_token: idToken }),
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        saveToken(data.token || data.access_token);
+      
+      if (resp.ok) {
+        const data = await resp.json();
+        saveToken(data.token);
         await loadMe();
         enterApp();
         return;
       }
 
-      if (res.status === 423) {
-        const data = await res.json().catch(() => ({}));
-        const until = data.locked_until ? ` Account locked until ${fmtDate(data.locked_until)}.` : '';
-        showAlert(alertEl, 'alert--warning', `Account is locked.${until}`);
+      if (resp.status === 401) {
+        showAlert(alertEl, 'alert--error', 'Your email is not authorized. Contact your administrator.');
         return;
       }
-
-      if (res.status === 401) {
-        showAlert(alertEl, 'alert--error', 'Invalid credentials. Please try again.');
-        return;
+      
+      showAlert(alertEl, 'alert--error', 'Authentication failed. Please try again.');
+    } catch (error) {
+      console.error('Firebase login error:', error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        showAlert(alertEl, 'alert--warning', 'Sign-in cancelled.');
+      } else if (error.code === 'auth/popup-blocked') {
+        showAlert(alertEl, 'alert--error', 'Pop-up blocked. Please allow pop-ups for this site.');
+      } else {
+        showAlert(alertEl, 'alert--error', 'Sign-in failed. Please try again.');
       }
-
-      showAlert(alertEl, 'alert--error', `Login failed (HTTP ${res.status}). Please try again.`);
-    } catch (err) {
-      showAlert(alertEl, 'alert--error', `Network error: ${err.message}`);
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Sign in';
+      btn.disabled = false;
+      btn.textContent = 'Sign in with Google';
     }
   });
 }
 
+// Setup wizard removed — use OLLIE_BOOTSTRAP_OWNER_EMAIL env var
 export function initSetupForm(enterApp) {
-  const form = document.getElementById('setup-form');
-  if (!form) return;
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const alertEl = document.getElementById('setup-alert');
-    const submitBtn = document.getElementById('setup-submit');
-    const name = document.getElementById('setup-name').value.trim();
-    const email = document.getElementById('setup-email').value.trim();
-    const password = document.getElementById('setup-password').value;
-
-    alertEl.hidden = true;
-    alertEl.className = 'alert';
-    alertEl.textContent = '';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Creating…';
-
-    try {
-      const res = await fetch('/fleet/setup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        saveToken(data.token || data.access_token);
-        await loadMe();
-        enterApp();
-        return;
-      }
-
-      if (res.status === 409 || res.status === 410) {
-        showAlert(alertEl, 'alert--warning', 'Setup has already been completed. Please sign in.');
-        showLogin();
-        return;
-      }
-
-      showAlert(alertEl, 'alert--error', `Setup failed (HTTP ${res.status}). Please try again.`);
-    } catch (err) {
-      showAlert(alertEl, 'alert--error', `Network error: ${err.message}`);
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Create owner account';
-    }
-  });
+  // No-op: setup wizard removed in Firebase fork
 }
