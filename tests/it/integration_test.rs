@@ -993,9 +993,13 @@ async fn test_query_blob_returns_401_without_auth() {
 
 async fn create_test_driver(server: &axum_test::TestServer) -> String {
     let owner_token = setup_owner(server).await;
+    let driver_id = uuid::Uuid::new_v4();
     server.post("/fleet/api/v1/drivers")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Test Driver" }))
+        .json(&serde_json::json!({ 
+            "name": "Test Driver",
+            "email": format!("test-driver-{}@example.com", driver_id)
+        }))
         .await
         .json::<serde_json::Value>()["id"].as_str().unwrap().to_string()
 }
@@ -3452,23 +3456,10 @@ async fn test_fleet_user_count_endpoints_return_200() {
 
 async fn setup_driver_with_delivered_trip(server: &TestServer, state: &AppState) -> String {
     let owner_token = setup_owner(server).await;
-    let driver_id_str = server.post("/fleet/api/v1/drivers")
-        .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Past Trip Driver" }))
-        .await
-        .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
-    let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-
-    // Seed driver_credentials so middleware accepts a JWT for this driver.
-    let creds = ollie::models::DriverCredentials {
-        driver_id,
-        pin_hash: None,
-        token_version: 1,
-        failed_pin_attempts: 0,
-        locked_until: None,
-        updated_at: chrono::Utc::now()
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
+    
+    // Use shared Firebase login helper
+    let (driver_token, driver_id) = crate::common::driver_with_firebase_login(server, state, "Past Trip Driver").await;
+    let driver_id_str = driver_id.to_string();
 
     let truck_id = server.post("/fleet/api/v1/trucks")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -3511,14 +3502,7 @@ async fn setup_driver_with_delivered_trip(server: &TestServer, state: &AppState)
         .await;
     assert_eq!(depart_delivery.status_code(), 200);
 
-    // Login with Firebase token
-    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
-    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
-    let login_resp = server.post("/driver/api/v1/auth/login")
-        .json(&serde_json::json!({ "id_token": firebase_id_token }))
-        .await;
-    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
+    driver_token
 }
 
 #[tokio::test]
@@ -3539,22 +3523,10 @@ async fn setup_driver_with_intransit_trip_two_stops(
     state: &AppState,
 ) -> (String, String) {
     let owner_token = setup_owner(server).await;
-    let driver_id_str = server.post("/fleet/api/v1/drivers")
-        .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "InTransit Driver" }))
-        .await
-        .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
-    let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-
-    let creds = ollie::models::DriverCredentials {
-        driver_id,
-        pin_hash: None,
-        token_version: 1,
-        failed_pin_attempts: 0,
-        locked_until: None,
-        updated_at: chrono::Utc::now()
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
+    
+    // Use shared Firebase login helper
+    let (driver_token, driver_id) = crate::common::driver_with_firebase_login(server, state, "InTransit Driver").await;
+    let driver_id_str = driver_id.to_string();
 
     let truck_id = server.post("/fleet/api/v1/trucks")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -3600,15 +3572,7 @@ async fn setup_driver_with_intransit_trip_two_stops(
     let trip_uuid: uuid::Uuid = trip_id.parse().unwrap();
     state.db.transition_trip_status(trip_uuid, ollie::models::TripStatus::InTransit).await.unwrap();
 
-    // Login with Firebase token
-    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
-    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
-    let login_resp = server.post("/driver/api/v1/auth/login")
-        .json(&serde_json::json!({ "id_token": firebase_id_token }))
-        .await;
-    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
-    (token, trip_id)
+    (driver_token, trip_id)
 }
 
 #[tokio::test]
@@ -4200,21 +4164,9 @@ async fn setup_driver_trip_on_load(
     let fac_id = create_test_facility(server, "Dock", "Memphis, TN").await;
     let load_id = create_test_load(server, &fac_id).await;
 
-    let driver_id_str = server.post("/fleet/api/v1/drivers")
-        .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Doc Driver" }))
-        .await
-        .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
-    let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-    let creds = ollie::models::DriverCredentials {
-        driver_id,
-        pin_hash: None,
-        token_version: 1,
-        failed_pin_attempts: 0,
-        locked_until: None,
-        updated_at: chrono::Utc::now()
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
+    // Use shared Firebase login helper
+    let (driver_token, driver_id) = crate::common::driver_with_firebase_login(server, state, "Doc Driver").await;
+    let driver_id_str = driver_id.to_string();
 
     let truck_id = server.post("/fleet/api/v1/trucks")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -4237,15 +4189,6 @@ async fn setup_driver_trip_on_load(
         .await;
     let trip_uuid: uuid::Uuid = trip_id.parse().unwrap();
     state.db.transition_trip_status(trip_uuid, ollie::models::TripStatus::InTransit).await.unwrap();
-
-    // Login with Firebase token
-    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
-    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
-    let login_resp = server.post("/driver/api/v1/auth/login")
-        .json(&serde_json::json!({ "id_token": firebase_id_token }))
-        .await;
-    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    let driver_token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
 
     (owner_token, driver_token, load_id, trip_id)
 }
@@ -4698,22 +4641,10 @@ async fn setup_driver_with_dispatched_load_trip(
     state: &AppState,
 ) -> (String, String, String) {
     let owner_token = setup_owner(server).await;
-    let driver_id_str = server.post("/fleet/api/v1/drivers")
-        .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Cascade Driver" }))
-        .await
-        .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
-    let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-
-    let creds = ollie::models::DriverCredentials {
-        driver_id,
-        pin_hash: None,
-        token_version: 1,
-        failed_pin_attempts: 0,
-        locked_until: None,
-        updated_at: chrono::Utc::now()
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
+    
+    // Use shared Firebase login helper
+    let (driver_token, driver_id) = crate::common::driver_with_firebase_login(server, state, "Cascade Driver").await;
+    let driver_id_str = driver_id.to_string();
 
     let truck_id = server.post("/fleet/api/v1/trucks")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -4758,15 +4689,7 @@ async fn setup_driver_with_dispatched_load_trip(
         .await;
     assert_eq!(dispatch.status_code(), 200);
 
-    // Login with Firebase token
-    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
-    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
-    let login_resp = server.post("/driver/api/v1/auth/login")
-        .json(&serde_json::json!({ "id_token": firebase_id_token }))
-        .await;
-    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
-    (token, trip_id, load_id)
+    (driver_token, trip_id, load_id)
 }
 
 /// The driver trip-detail view must surface the *trip* notes (operational text
@@ -6590,27 +6513,8 @@ async fn test_facility_doctor_apply_retries_permanently_failed_geocode() {
 // ---------------------------------------------------------------------------
 
 async fn create_driver_with_jwt(server: &TestServer, state: &AppState) -> (uuid::Uuid, String) {
-    let owner_token = setup_owner(server).await;
-    let driver_id_str = server.post("/fleet/api/v1/drivers")
-        .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Equip Driver" }))
-        .await
-        .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
-    let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-    let creds = ollie::models::DriverCredentials {
-        driver_id, pin_hash: None, token_version: 1,
-        failed_pin_attempts: 0, locked_until: None,
-        updated_at: chrono::Utc::now()
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
-    // Login with Firebase token
-    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
-    let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
-    let login_resp = server.post("/driver/api/v1/auth/login")
-        .json(&serde_json::json!({ "id_token": firebase_id_token }))
-        .await;
-    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
-    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    // Use shared Firebase login helper
+    let (token, driver_id) = crate::common::driver_with_firebase_login(server, state, "Equip Driver").await;
     (driver_id, token)
 }
 
@@ -9023,10 +8927,14 @@ async fn test_users_mcp_parity() {
     assert_eq!(del["deleted"], serde_json::json!(true));
 }
 
-/// Log in a fleet_manager that the owner created, returning their JWT.
-async fn login_as(server: &axum_test::TestServer, email: &str, password: &str) -> String {
+/// Log in a fleet user with Firebase, returning their JWT.
+async fn login_as(server: &axum_test::TestServer, email: &str, _password: &str) -> String {
+    // Login with Firebase token using static test helper
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(email, &format!("test-uid-{}", email), None);
+    
     let resp = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": email, "password": password })).await;
+        .json(&serde_json::json!({ "id_token": firebase_id_token })).await;
     assert_eq!(resp.status_code(), 200, "login failed: {}", resp.text());
     resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
 }
