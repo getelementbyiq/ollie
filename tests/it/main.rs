@@ -17,6 +17,7 @@ mod divert_test;
 mod driver_equipment_test;
 mod driver_expenses_test;
 mod driver_internal_notes_test;
+mod elearning_test;
 mod expenses_test;
 mod fleet_pagination_test;
 mod fleet_static_cache_test;
