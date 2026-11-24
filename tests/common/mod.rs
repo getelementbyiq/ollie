@@ -5,6 +5,8 @@
 // HTTP server on an ephemeral local port. The pipeline tests live in
 // tests/isolated.rs because they set process-global env vars
 // (OLLIE_TESSERACT_BIN) that must not leak into the main suite.
+pub mod firebase_test;
+
 use axum::{response::IntoResponse, routing::post, Json, Router};
 use bytes::Bytes;
 use chrono::Utc;

@@ -46,19 +46,19 @@ struct JwksResponse {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-struct JwkKey {
-    kid: String,
-    n: String,
-    e: String,
-    kty: String,
-    alg: String,
+pub struct JwkKey {
+    pub kid: String,
+    pub n: String,
+    pub e: String,
+    pub kty: String,
+    pub alg: String,
     #[serde(rename = "use")]
-    use_: String,
+    pub use_: String,
 }
 
-struct JwksCache {
-    keys: HashMap<String, JwkKey>,
-    fetched_at: SystemTime,
+pub struct JwksCache {
+    pub keys: HashMap<String, JwkKey>,
+    pub fetched_at: SystemTime,
 }
 
 pub struct FirebaseAuth {
@@ -77,6 +77,13 @@ impl FirebaseAuth {
                 .build()
                 .expect("firebase http client failed to init"),
         }
+    }
+
+    /// Test-only: seed the JWKS cache with pre-generated keys (bypasses HTTP fetch)
+    #[cfg(test)]
+    pub async fn seed_jwks_cache_for_test(&self, cache: JwksCache) {
+        let mut guard = self.jwks_cache.write().await;
+        *guard = Some(cache);
     }
 
     /// Verify a Firebase ID token and return the claims.
