@@ -1629,15 +1629,17 @@ async fn fleet_user_login(server: &axum_test::TestServer, email: &str, password:
     // owner — is creatable (the surface forbids creating role=owner). This keeps
     // the full elevated-op range these data tests exercise.
     let owner = setup_owner(server).await;
-    server.post("/fleet/api/v1/users")
+    let create_resp = server.post("/fleet/api/v1/users")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
         .json(&serde_json::json!({
             "email": email,
             "name": "Test Dispatcher",
             "role": "fleet_manager",
             "status": "active",
+            "password": "test-password-not-used",
         }))
         .await;
+    assert_eq!(create_resp.status_code(), 201, "User creation failed: {}", create_resp.text());
 
     // Login with Firebase token
     let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
@@ -8389,6 +8391,7 @@ pub(crate) async fn login_with_role(
         .json(&serde_json::json!({
             "email": email, "name": "Test User", "role": role,
             "status": "active",
+            "password": "test-password-not-used",
         }))
         .await;
 

@@ -81,6 +81,7 @@ async fn create_dispatcher_and_login(server: &TestServer, owner: &str) -> String
         .authorization_bearer(owner)
         .json(&serde_json::json!({
             "email": email, "name": "Dispatcher", "role": "dispatcher", "status": "active",
+            "password": "test-password-not-used",
         }))
         .await;
     assert_eq!(create.status_code(), 201, "dispatcher create failed");
