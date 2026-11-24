@@ -10,7 +10,7 @@ use ollie::{
     config::Config,
     db::DbClient,
     storage::BlobStore,
-    AppState,
+    AppState
 };
 use std::sync::Arc;
 use tempfile::TempDir;
@@ -65,7 +65,7 @@ async fn test_server_with_state() -> (
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
-        firebase, elearning_sessions,
+        firebase, elearning_sessions
     };
     let server = TestServer::new(api::router(state.clone())).unwrap();
     (server, blob_dir, db_dir, rx, state)
@@ -80,9 +80,7 @@ async fn create_dispatcher_and_login(server: &TestServer, owner: &str) -> String
     let create = server.post("/fleet/api/v1/users")
         .authorization_bearer(owner)
         .json(&serde_json::json!({
-            "email": email, "name": "Dispatcher", "role": "dispatcher", "status": "active",
-            "password": "test-password-not-used",
-        }))
+            "email": email, "name": "Dispatcher", "role": "dispatcher", "status": "active"        }))
         .await;
     assert_eq!(create.status_code(), 201, "dispatcher create failed");
     
@@ -143,7 +141,7 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
-        firebase, elearning_sessions,
+        firebase, elearning_sessions
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, blob_dir, db_dir, rx)
@@ -180,7 +178,7 @@ async fn create_maintenance_unlinked(
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": desc,
+            "description": desc
         })).await;
     assert_eq!(m.status_code(), 201);
     m.json::<serde_json::Value>()["id"].as_str().unwrap().to_string()
@@ -217,7 +215,7 @@ async fn test_create_expense_validates_links() {
         .authorization_bearer(&token)
         .json(&serde_json::json!({
             "category": "repair",
-            "driver_id": uuid::Uuid::new_v4(),
+            "driver_id": uuid::Uuid::new_v4()
         })).await;
     assert_eq!(resp.status_code(), 400);
     // equipment_type without equipment_id -> 400
@@ -460,7 +458,7 @@ async fn test_maintenance_expense_crosslink_and_cost_mirror() {
         let r = server.post("/fleet/api/v1/expenses")
             .authorization_bearer(&token)
             .json(&serde_json::json!({
-                "category": "repair", "equipment_type": "truck", "equipment_id": truck_id,
+                "category": "repair", "equipment_type": "truck", "equipment_id": truck_id
             })).await;
         assert_eq!(r.status_code(), 201);
         r.json::<serde_json::Value>()["id"].as_str().unwrap().to_string()
@@ -471,7 +469,7 @@ async fn test_maintenance_expense_crosslink_and_cost_mirror() {
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
             "description": "roadside tire replacement",
-            "expense_id": exp_id,
+            "expense_id": exp_id
         })).await;
     assert_eq!(m.status_code(), 201);
     let mid = m.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -509,7 +507,7 @@ async fn test_patch_linking_expense_rejects_cost_in_same_body() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "unlinked oil change",
+            "description": "unlinked oil change"
         })).await;
     assert_eq!(m.status_code(), 201);
     let mid = m.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -533,7 +531,7 @@ async fn test_expense_cannot_double_link() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "first repair", "expense_id": exp_id,
+            "description": "first repair", "expense_id": exp_id
         })).await;
     assert_eq!(a.status_code(), 201);
 
@@ -542,7 +540,7 @@ async fn test_expense_cannot_double_link() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "second repair, same expense", "expense_id": exp_id,
+            "description": "second repair, same expense", "expense_id": exp_id
         })).await;
     assert_eq!(b.status_code(), 400);
 
@@ -551,7 +549,7 @@ async fn test_expense_cannot_double_link() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "third repair, unlinked",
+            "description": "third repair, unlinked"
         })).await;
     assert_eq!(c.status_code(), 201);
     let cid = c.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -575,7 +573,7 @@ async fn test_maintenance_cannot_repoint_linked_expense() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "first repair", "expense_id": exp_x,
+            "description": "first repair", "expense_id": exp_x
         })).await;
     assert_eq!(a.status_code(), 201);
     let aid = a.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -873,7 +871,7 @@ async fn test_warranty_maintenance_needs_no_expense() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "warranty turbo replacement", "cost": 0.0,
+            "description": "warranty turbo replacement", "cost": 0.0
         })).await;
     assert_eq!(m.status_code(), 201);
     let body: serde_json::Value = m.json();

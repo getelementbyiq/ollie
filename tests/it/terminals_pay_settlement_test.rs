@@ -10,7 +10,7 @@ use ollie::{
     config::Config,
     db::DbClient,
     storage::BlobStore,
-    AppState,
+    AppState
 };
 use std::sync::Arc;
 use tempfile::TempDir;
@@ -69,7 +69,7 @@ async fn test_server_with_db() -> (TestServer, Arc<DbClient>, TempDir, TempDir) 
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
-        firebase, elearning_sessions,
+        firebase, elearning_sessions
     };
     let db_handle = state.db.clone();
     let server = TestServer::new(api::router(state)).unwrap();
@@ -95,7 +95,7 @@ async fn fleet_user_login(server: &TestServer, email: &str, password: &str) -> S
             "email": email,
             "name": "Test Dispatcher",
             "password": password,
-            "role": "fleet_manager",
+            "role": "fleet_manager"
         }))
         .await;
 
@@ -368,7 +368,7 @@ async fn test_driver_pay_on_trip_detail_uses_resolved_rates() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -417,7 +417,7 @@ async fn test_driver_pay_on_trip_detail_uses_resolved_rates() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -476,7 +476,7 @@ async fn test_driver_pay_present_for_tonu_shaped_trip_with_deadhead_only() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -524,7 +524,7 @@ async fn test_driver_pay_present_for_tonu_shaped_trip_with_deadhead_only() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -558,7 +558,7 @@ async fn test_driver_pay_absent_when_no_miles_at_all() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -604,7 +604,7 @@ async fn test_driver_pay_absent_when_no_miles_at_all() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -639,7 +639,7 @@ async fn test_driver_pay_bills_detention_when_a_tonu_trip_has_no_miles() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -671,7 +671,7 @@ async fn test_driver_pay_bills_detention_when_a_tonu_trip_has_no_miles() {
         notes: None,
         timezone: Some("America/Chicago".into()),
         actual_arrive_utc: None,
-        actual_depart_utc: None,
+        actual_depart_utc: None
     };
     let now = chrono::Utc::now();
     let trip_id = uuid::Uuid::new_v4();
@@ -707,7 +707,7 @@ async fn test_driver_pay_bills_detention_when_a_tonu_trip_has_no_miles() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -745,7 +745,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -779,7 +779,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
         notes: None,
         timezone: Some("America/New_York".into()),
         actual_arrive_utc: None,
-        actual_depart_utc: None,
+        actual_depart_utc: None
     };
     let trip = TripRecord {
         internal_notes: None,
@@ -812,7 +812,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -831,7 +831,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
         .json(&serde_json::json!({
             "settlement_ref": "S-2026-009",
             "pay_period_start": "2026-05-25",
-            "pay_period_end": "2026-05-31",
+            "pay_period_end": "2026-05-31"
         }))
         .await;
     assert_eq!(patch.status_code(), 200, "settlement patch failed: {:?}", patch.text());
@@ -936,7 +936,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
 mod migration_guard {
     use arrow_array::{
         FixedSizeListArray, Float64Array, Int64Array, RecordBatch, RecordBatchIterator,
-        RecordBatchReader, StringArray,
+        RecordBatchReader, StringArray
     };
     use arrow_schema::{DataType, Field, Schema};
     use chrono::Utc;

@@ -7,7 +7,7 @@ use ollie::{
     config::Config,
     db::DbClient,
     storage::BlobStore,
-    AppState,
+    AppState
 };
 use std::sync::Arc;
 use tempfile::TempDir;
@@ -63,7 +63,7 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
-        firebase, elearning_sessions,
+        firebase, elearning_sessions
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, blob_dir, db_dir, rx)
@@ -113,7 +113,7 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
-        firebase, elearning_sessions,
+        firebase, elearning_sessions
     };
     let server = TestServer::new(api::router(state.clone())).unwrap();
     (server, blob_dir, db_dir, rx, state)
@@ -156,7 +156,7 @@ async fn setup_owner_with_db(db: &ollie::db::DbClient) -> String {
         email: String,
         role: String,
         exp: i64,
-        iat: i64,
+        iat: i64
     }
     
     let owner_id = Uuid::new_v4();
@@ -169,7 +169,7 @@ async fn setup_owner_with_db(db: &ollie::db::DbClient) -> String {
         status: FleetUserStatus::Active,
         extra_scopes: Vec::new(),
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     
     // Insert owner into DB (idempotent - ignore if exists)
@@ -182,7 +182,7 @@ async fn setup_owner_with_db(db: &ollie::db::DbClient) -> String {
         email: OWNER_EMAIL.to_string(),
         role: "owner".to_string(),
         exp: (now + chrono::Duration::hours(8)).timestamp(),
-        iat: now.timestamp(),
+        iat: now.timestamp()
     };
     
     let key = EncodingKey::from_secret(secret.as_bytes());
@@ -207,7 +207,7 @@ async fn seed_owner_direct(state: &AppState, email: &str, password: &str) {
         role: Role::Owner,
         extra_scopes: Vec::new(),
         created_at: now,
-        updated_at: now,
+        updated_at: now
     }).await.unwrap();
     let password_hash = bcrypt::hash(password, 4).unwrap();
     state.db.upsert_fleet_user_credentials(&FleetUserCredentials {
@@ -216,7 +216,7 @@ async fn seed_owner_direct(state: &AppState, email: &str, password: &str) {
         token_version: 0,
         failed_attempts: 0,
         locked_until: None,
-        updated_at: now,
+        updated_at: now
     }).await.unwrap();
 }
 
@@ -852,7 +852,7 @@ async fn test_trip_creation_cascades_load_to_assigned() {
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
             "load_id": load_id,
-            "driver_id": driver_id,
+            "driver_id": driver_id
         }))
         .await;
     assert_eq!(resp.status_code(), 201);
@@ -1420,9 +1420,7 @@ async fn test_create_fleet_user_returns_201() {
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
             "email": "fleet_user@example.com",
-            "name": "Jane Dispatcher",
-            "password": "securepassword123",
-            "role": "dispatcher"
+            "name": "Jane Dispatcher",            "role": "dispatcher"
         }))
         .await;
     assert_eq!(resp.status_code(), 201);
@@ -1440,9 +1438,7 @@ async fn test_create_fleet_user_duplicate_email_returns_409() {
     let owner_token = setup_owner(&server).await;
     let body = serde_json::json!({
         "email": "dup@example.com",
-        "name": "First",
-        "password": "password123",
-        "role": "dispatcher"
+        "name": "First",        "role": "dispatcher"
     });
     let r1 = server.post("/fleet/api/v1/users")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -1454,9 +1450,7 @@ async fn test_create_fleet_user_duplicate_email_returns_409() {
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
             "email": "dup@example.com",
-            "name": "Second",
-            "password": "different",
-            "role": "dispatcher"
+            "name": "Second",            "role": "dispatcher"
         }))
         .await;
     assert_eq!(r2.status_code(), 409);
@@ -1486,9 +1480,7 @@ async fn test_get_fleet_user_by_id() {
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
             "email": "get@example.com",
-            "name": "Get Me",
-            "password": "password123",
-            "role": "dispatcher"
+            "name": "Get Me",            "role": "dispatcher"
         }))
         .await;
     assert_eq!(create.status_code(), 201);
@@ -1516,9 +1508,7 @@ async fn test_fleet_user_login_success() {
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
             "email": "login@example.com",
-            "name": "Login Test",
-            "password": "correct-password-123",
-            "role": "dispatcher"
+            "name": "Login Test",            "role": "dispatcher"
         }))
         .await;
     assert_eq!(create.status_code(), 201);
@@ -1526,9 +1516,7 @@ async fn test_fleet_user_login_success() {
     // Login via fleet_user portal
     let resp = server.post("/fleet/auth/login")
         .json(&serde_json::json!({
-            "email": "login@example.com",
-            "password": "correct-password-123"
-        }))
+            "email": "login@example.com"        }))
         .await;
     assert_eq!(resp.status_code(), 200);
     let body = resp.json::<serde_json::Value>();
@@ -1544,18 +1532,14 @@ async fn test_fleet_user_login_bad_password() {
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
             "email": "badpass@example.com",
-            "name": "Bad Pass",
-            "password": "correct-password-123",
-            "role": "dispatcher"
+            "name": "Bad Pass",            "role": "dispatcher"
         }))
         .await;
     assert_eq!(create.status_code(), 201);
 
     let resp = server.post("/fleet/auth/login")
         .json(&serde_json::json!({
-            "email": "badpass@example.com",
-            "password": "wrong-password"
-        }))
+            "email": "badpass@example.com"        }))
         .await;
     assert_eq!(resp.status_code(), 401);
 }
@@ -1566,9 +1550,7 @@ async fn test_fleet_user_login_unknown_email() {
 
     let resp = server.post("/fleet/auth/login")
         .json(&serde_json::json!({
-            "email": "nobody@example.com",
-            "password": "any-password"
-        }))
+            "email": "nobody@example.com"        }))
         .await;
     assert_eq!(resp.status_code(), 401);
 }
@@ -1583,9 +1565,7 @@ async fn test_fleet_user_refresh() {
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
             "email": "refresh@example.com",
-            "name": "Refresh Test",
-            "password": "refresh-password-123",
-            "role": "dispatcher"
+            "name": "Refresh Test",            "role": "dispatcher"
         }))
         .await;
     assert_eq!(create.status_code(), 201);
@@ -1593,9 +1573,7 @@ async fn test_fleet_user_refresh() {
     // Login to get initial token
     let login = server.post("/fleet/auth/login")
         .json(&serde_json::json!({
-            "email": "refresh@example.com",
-            "password": "refresh-password-123"
-        }))
+            "email": "refresh@example.com"        }))
         .await;
     assert_eq!(login.status_code(), 200);
     let set_cookie = login.headers()
@@ -1635,9 +1613,7 @@ async fn fleet_user_login(server: &axum_test::TestServer, email: &str, password:
             "email": email,
             "name": "Test Dispatcher",
             "role": "fleet_manager",
-            "status": "active",
-            "password": "test-password-not-used",
-        }))
+            "status": "active"        }))
         .await;
     assert_eq!(create_resp.status_code(), 201, "User creation failed: {}", create_resp.text());
 
@@ -2502,7 +2478,7 @@ fn structured_conforms(schema: &serde_json::Value, instance: &serde_json::Value)
             "string" => val.is_string(),
             "object" => val.is_object(),
             "boolean" => val.is_boolean(),
-            _ => true,
+            _ => true
         }
     }
     let Some(obj) = instance.as_object() else { return false };
@@ -2621,7 +2597,7 @@ async fn test_fleet_user_mcp_list_cursor_paginates_all_records() {
         assert!(pages <= 10, "pagination must terminate");
         match res["nextCursor"].as_str() {
             Some(c) => cursor = Some(c.to_string()),
-            None => break,
+            None => break
         }
     }
 
@@ -3482,7 +3458,7 @@ async fn setup_driver_with_delivered_trip(server: &TestServer, state: &AppState)
         token_version: 1,
         failed_pin_attempts: 0,
         locked_until: None,
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
 
@@ -3562,7 +3538,7 @@ async fn setup_driver_with_intransit_trip_two_stops(
         token_version: 1,
         failed_pin_attempts: 0,
         locked_until: None,
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
 
@@ -3713,7 +3689,7 @@ async fn test_driver_stop_detail_includes_scheduled_arrive_utc() {
     let creds = ollie::models::DriverCredentials {
         driver_id, pin_hash: None, token_version: 1,
         failed_pin_attempts: 0, locked_until: None,
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
 
@@ -3832,7 +3808,7 @@ async fn test_admin_get_trip_legacy_z_row_reads_utc_field() {
         notes: None,
         timezone: None,
         actual_arrive_utc: None,
-        actual_depart_utc: None,
+        actual_depart_utc: None
     }];
     state.db.update_trip_metadata(trip_uuid,
         ollie::db::trip_ops::TripMetadataUpdate { stops: Some(legacy_stops), ..Default::default() },
@@ -3878,7 +3854,7 @@ async fn test_patch_stop_accepts_z_suffix_when_no_timezone() {
         notes: None,
         timezone: None,
         actual_arrive_utc: None,
-        actual_depart_utc: None,
+        actual_depart_utc: None
     };
     state.db.update_trip_metadata(trip_uuid,
         ollie::db::trip_ops::TripMetadataUpdate { stops: Some(stops), ..Default::default() },
@@ -4210,7 +4186,7 @@ async fn setup_driver_trip_on_load(
         token_version: 1,
         failed_pin_attempts: 0,
         locked_until: None,
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
 
@@ -4530,7 +4506,7 @@ async fn setup_driver_with_three_historical_trips(
         token_version: 1,
         failed_pin_attempts: 0,
         locked_until: None,
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
 
@@ -4697,7 +4673,7 @@ async fn setup_driver_with_dispatched_load_trip(
         token_version: 1,
         failed_pin_attempts: 0,
         locked_until: None,
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
 
@@ -5135,7 +5111,7 @@ async fn test_compute_and_persist_mileage_returns_ors_unavailable_when_coords_mi
     let result = ollie::api::trips::compute_and_persist_mileage(&state, trip_id).await;
     match result {
         Err(ollie::error::AppError::OrsRoutingUnavailable(_)) => {}
-        other => panic!("expected OrsRoutingUnavailable, got {other:?}"),
+        other => panic!("expected OrsRoutingUnavailable, got {other:?}")
     }
 
     // DB unchanged: still no miles
@@ -5561,7 +5537,7 @@ async fn test_trip_doctor_apply_resyncs_stops_from_load_without_overwriting() {
     let trip_id = trip.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
 
     let report = mcp_call(&server, &token, "trip_doctor", serde_json::json!({
-        "trip_id": trip_id, "apply": true,
+        "trip_id": trip_id, "apply": true
     })).await;
     assert_eq!(report["dry_run"], serde_json::json!(false));
     // The metadata finding should be present but have a conflict, so the fix
@@ -6360,7 +6336,7 @@ async fn test_fleet_user_facility_crud_http() {
         .add_header(header::AUTHORIZATION, &auth)
         .json(&serde_json::json!({
             "name": "Plant City RSC",
-            "address": "1000 Industrial Blvd, Plant City FL",
+            "address": "1000 Industrial Blvd, Plant City FL"
         }))
         .await;
     assert_eq!(created.status_code(), 201);
@@ -6406,7 +6382,7 @@ async fn test_fleet_user_facility_create_with_explicit_coords_marks_ready() {
             "name": "Pre-Geocoded Dock",
             "address": "123 Known St",
             "lat": 28.0125,
-            "lng": -82.1199,
+            "lng": -82.1199
         }))
         .await;
     assert_eq!(resp.status_code(), 201);
@@ -6434,7 +6410,7 @@ async fn test_fleet_user_facility_patch_address_requeues_geocode() {
         geocode_failure_count: 0,
         contacts: vec![], notes: None, tags: vec![], blob_ids: vec![],
         avg_dwell_minutes: None, dwell_sample_count: 0,
-        archived: false, embedding: None, created_at: now, updated_at: now,
+        archived: false, embedding: None, created_at: now, updated_at: now
     }).await.unwrap();
 
     let resp = server.patch(&format!("/fleet/api/v1/facilities/{id}"))
@@ -6466,7 +6442,7 @@ async fn test_fleet_user_facility_patch_explicit_coords_repair_failed_geocode() 
         geocode_failure_count: 3,
         contacts: vec![], notes: None, tags: vec![], blob_ids: vec![],
         avg_dwell_minutes: None, dwell_sample_count: 0,
-        archived: false, embedding: None, created_at: now, updated_at: now,
+        archived: false, embedding: None, created_at: now, updated_at: now
     }).await.unwrap();
 
     let resp = server.patch(&format!("/fleet/api/v1/facilities/{id}"))
@@ -6488,7 +6464,7 @@ async fn test_fleet_user_facility_create_rejects_unknown_field() {
         .add_header(header::AUTHORIZATION, format!("Bearer {token}"))
         .json(&serde_json::json!({
             "name": "X", "address": "Y",
-            "admin_secret": "leak",
+            "admin_secret": "leak"
         }))
         .await;
     assert_eq!(resp.status_code(), 400);
@@ -6520,14 +6496,14 @@ async fn test_fleet_user_facility_mcp_create_and_update() {
 
     // MCP create_facility
     let record = mcp_call(&server, &token, "create_facility", serde_json::json!({
-        "name": "MCP Facility", "address": "1 MCP Way",
+        "name": "MCP Facility", "address": "1 MCP Way"
     })).await;
     let id = record["id"].as_str().unwrap().to_string();
     assert_eq!(record["geocode_status"], "pending");
 
     // MCP update_facility — set explicit coords
     let upd_record = mcp_call(&server, &token, "update_facility", serde_json::json!({
-        "facility_id": id, "lat": 30.0, "lng": -90.0,
+        "facility_id": id, "lat": 30.0, "lng": -90.0
     })).await;
     assert_eq!(upd_record["geocode_status"], "ready");
     assert!((upd_record["lat"].as_f64().unwrap() - 30.0).abs() < 1e-9);
@@ -6550,11 +6526,11 @@ async fn test_facility_doctor_apply_retries_permanently_failed_geocode() {
         geocode_failure_count: 3,
         contacts: vec![], notes: None, tags: vec![], blob_ids: vec![],
         avg_dwell_minutes: None, dwell_sample_count: 0,
-        archived: false, embedding: None, created_at: now, updated_at: now,
+        archived: false, embedding: None, created_at: now, updated_at: now
     }).await.unwrap();
 
     let report = mcp_call(&server, &token, "facility_doctor", serde_json::json!({
-        "facility_id": id.to_string(), "apply": true,
+        "facility_id": id.to_string(), "apply": true
     })).await;
     let applied = report["applied"].as_array().unwrap();
     assert!(applied.iter().any(|c| c == "facility.geocode_retry"),
@@ -6580,7 +6556,7 @@ async fn create_driver_with_jwt(server: &TestServer, state: &AppState) -> (uuid:
     let creds = ollie::models::DriverCredentials {
         driver_id, pin_hash: None, token_version: 1,
         failed_pin_attempts: 0, locked_until: None,
-        updated_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now()
     };
     state.db.upsert_driver_credentials(&creds).await.unwrap();
     let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
@@ -6699,7 +6675,7 @@ async fn test_driver_equipment_update_both_fields_returns_400() {
         .add_header(header::AUTHORIZATION, format!("Bearer {token}"))
         .json(&serde_json::json!({
             "trailer_ids": [trailer_id.to_string()],
-            "trailer_unit_numbers": ["TR-BOTH"],
+            "trailer_unit_numbers": ["TR-BOTH"]
         }))
         .await;
     assert_eq!(resp.status_code(), 400);
@@ -6746,7 +6722,7 @@ async fn test_driver_equipment_cascades_into_active_in_transit_trip() {
         .json(&serde_json::json!({
             "driver_id": driver_id.to_string(),
             "truck_id": truck_id,
-            "trailer_ids": [old_trailer.to_string()],
+            "trailer_ids": [old_trailer.to_string()]
         }))
         .await;
     server.post(&format!("/fleet/api/v1/trips/{trip_id}/dispatch"))
@@ -6802,7 +6778,7 @@ async fn test_driver_equipment_no_cascade_when_at_final_delivery() {
         .json(&serde_json::json!({
             "driver_id": driver_id.to_string(),
             "truck_id": truck_id,
-            "trailer_ids": [old_trailer.to_string()],
+            "trailer_ids": [old_trailer.to_string()]
         }))
         .await;
     server.post(&format!("/fleet/api/v1/trips/{trip_id}/dispatch"))
@@ -6863,7 +6839,7 @@ async fn test_dispatch_trip_reconciles_to_driver_current_trailer() {
         .json(&serde_json::json!({
             "driver_id": driver_id.to_string(),
             "truck_id": truck_id,
-            "trailer_ids": [initial_trailer.to_string()],
+            "trailer_ids": [initial_trailer.to_string()]
         }))
         .await;
 
@@ -6925,7 +6901,7 @@ async fn test_driver_equipment_cascade_syncs_trailer_statuses() {
         .json(&serde_json::json!({
             "driver_id": driver_id.to_string(),
             "truck_id": truck_id,
-            "trailer_ids": [old_trailer.to_string()],
+            "trailer_ids": [old_trailer.to_string()]
         }))
         .await;
     server.post(&format!("/fleet/api/v1/trips/{trip_id}/dispatch"))
@@ -6989,7 +6965,7 @@ async fn test_driver_equipment_reflects_assigned_trip_truck_and_trailer() {
         .json(&serde_json::json!({
             "driver_id": driver_id.to_string(),
             "truck_id": truck_id,
-            "trailer_ids": [trailer_id.to_string()],
+            "trailer_ids": [trailer_id.to_string()]
         }))
         .await;
 
@@ -7088,7 +7064,7 @@ async fn test_fleet_user_trailer_crud_http() {
             "unit_number": "DTRL-001",
             "owner": "fleet",
             "trailer_type": "dry_van",
-            "length_ft": 53.0,
+            "length_ft": 53.0
         }))
         .await;
     assert_eq!(created.status_code(), 201);
@@ -7133,7 +7109,7 @@ async fn test_fleet_user_trailer_create_requires_owner_name_when_not_fleet() {
         .add_header(header::AUTHORIZATION, format!("Bearer {token}"))
         .json(&serde_json::json!({
             "unit_number": "DTRL-CAR-001",
-            "owner": "carrier",
+            "owner": "carrier"
         }))
         .await;
     assert_eq!(resp.status_code(), 400);
@@ -7150,7 +7126,7 @@ async fn test_fleet_user_trailer_create_rejects_unknown_field() {
         .json(&serde_json::json!({
             "unit_number": "DTRL-X",
             "owner": "fleet",
-            "status": "dispatched",
+            "status": "dispatched"
         }))
         .await;
     assert_eq!(resp.status_code(), 400);
@@ -7195,7 +7171,7 @@ async fn test_fleet_user_truck_crud_http() {
             "unit_number": "DTRK-001",
             "make": "Kenworth",
             "model": "T680",
-            "year": 2024,
+            "year": 2024
         }))
         .await;
     assert_eq!(created.status_code(), 201);
@@ -7251,7 +7227,7 @@ async fn test_fleet_user_trailer_mcp_create_get_update() {
     let record = mcp_call(&server, &token, "create_trailer", serde_json::json!({
         "unit_number": "MCP-TRL-001",
         "owner": "fleet",
-        "trailer_type": "reefer",
+        "trailer_type": "reefer"
     })).await;
     let id = record["id"].as_str().unwrap().to_string();
     assert_eq!(record["status"], "available");
@@ -7265,7 +7241,7 @@ async fn test_fleet_user_trailer_mcp_create_get_update() {
 
     // update_trailer
     let upd = mcp_call(&server, &token, "update_trailer", serde_json::json!({
-        "trailer_id": id, "notes": "via MCP",
+        "trailer_id": id, "notes": "via MCP"
     })).await;
     assert_eq!(upd["notes"], "via MCP");
 }
@@ -7276,7 +7252,7 @@ async fn test_fleet_user_truck_mcp_create_get_update() {
     let token = fleet_user_login(&server, "trk-mcp@example.com", "password-trk-mcp").await;
 
     let record = mcp_call(&server, &token, "create_truck", serde_json::json!({
-        "unit_number": "MCP-TRK-001", "make": "Peterbilt",
+        "unit_number": "MCP-TRK-001", "make": "Peterbilt"
     })).await;
     let id = record["id"].as_str().unwrap().to_string();
     assert_eq!(record["status"], "available");
@@ -7288,7 +7264,7 @@ async fn test_fleet_user_truck_mcp_create_get_update() {
     assert_eq!(got["unit_number"], "MCP-TRK-001");
 
     let upd = mcp_call(&server, &token, "update_truck", serde_json::json!({
-        "truck_id": id, "model": "579",
+        "truck_id": id, "model": "579"
     })).await;
     assert_eq!(upd["model"], "579");
 }
@@ -7316,7 +7292,7 @@ async fn test_fleet_user_mcp_create_truck_and_trailer_then_assign() {
 
     // Create trailer via MCP
     let trailer_id = mcp_call(&server, &token, "create_trailer", serde_json::json!({
-        "unit_number": "ASG-TRL-001", "owner": "fleet",
+        "unit_number": "ASG-TRL-001", "owner": "fleet"
     })).await["id"].as_str().unwrap().to_string();
 
     // Trip
@@ -7340,7 +7316,7 @@ async fn test_fleet_user_mcp_create_truck_and_trailer_then_assign() {
         "trip_id": trip_id,
         "driver_id": driver_id,
         "truck_id": truck_id,
-        "trailer_ids": [trailer_id],
+        "trailer_ids": [trailer_id]
     })).await;
     assert_eq!(trip["status"], "assigned");
     assert_eq!(trip["driver_id"], driver_id);
@@ -8390,9 +8366,7 @@ pub(crate) async fn login_with_role(
         .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
         .json(&serde_json::json!({
             "email": email, "name": "Test User", "role": role,
-            "status": "active",
-            "password": "test-password-not-used",
-        }))
+            "status": "active"        }))
         .await;
 
     // Login with Firebase token using static test helper
@@ -8692,7 +8666,7 @@ async fn create_user_via_surface(
     let resp = server.post("/fleet/api/v1/users")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
         .json(&serde_json::json!({
-            "email": email, "name": name, "password": password, "role": role,
+            "email": email, "name": name, "password": password, "role": role
         }))
         .await;
     assert_eq!(resp.status_code(), 201, "create user failed: {}", resp.text());
@@ -9073,8 +9047,7 @@ async fn test_users_extra_scopes_grant_gating() {
     let bad_create = server.post("/fleet/api/v1/users")
         .add_header(header::AUTHORIZATION, &fmauth)
         .json(&serde_json::json!({
-            "email": "es_shadow@example.com", "name": "S", "password": "pwpwpwpw",
-            "role": "dispatcher", "extra_scopes": ["users:write"]
+            "email": "es_shadow@example.com", "name": "S",            "role": "dispatcher", "extra_scopes": ["users:write"]
         })).await;
     assert_eq!(bad_create.status_code(), 403, "fleet_manager cannot grant users:write on create");
 
@@ -9082,8 +9055,7 @@ async fn test_users_extra_scopes_grant_gating() {
     let bad_star = server.post("/fleet/api/v1/users")
         .add_header(header::AUTHORIZATION, &fmauth)
         .json(&serde_json::json!({
-            "email": "es_star@example.com", "name": "S", "password": "pwpwpwpw",
-            "role": "dispatcher", "extra_scopes": ["*"]
+            "email": "es_star@example.com", "name": "S",            "role": "dispatcher", "extra_scopes": ["*"]
         })).await;
     assert_eq!(bad_star.status_code(), 403, "fleet_manager cannot grant * on create");
 
@@ -9105,8 +9077,7 @@ async fn test_users_extra_scopes_grant_gating() {
     let owner_create = server.post("/fleet/api/v1/users")
         .add_header(header::AUTHORIZATION, &auth)
         .json(&serde_json::json!({
-            "email": "es_priv@example.com", "name": "P", "password": "pwpwpwpw",
-            "role": "dispatcher", "extra_scopes": ["users:write"]
+            "email": "es_priv@example.com", "name": "P",            "role": "dispatcher", "extra_scopes": ["users:write"]
         })).await;
     assert_eq!(owner_create.status_code(), 201, "owner may grant users:write: {}", owner_create.text());
     let owner_update = server.patch(&format!("/fleet/api/v1/users/{target_id}"))
@@ -9140,8 +9111,7 @@ async fn test_users_mcp_grant_and_reset_gating() {
 
     // FM create_user with users:write via MCP → isError.
     let create_blocked = mcp_call_result(&server, &fm, "create_user", serde_json::json!({
-        "email": "mg_shadow@example.com", "name": "S", "password": "pwpwpwpw",
-        "role": "dispatcher", "extra_scopes": ["users:write"]
+        "email": "mg_shadow@example.com", "name": "S",        "role": "dispatcher", "extra_scopes": ["users:write"]
     })).await;
     assert_eq!(create_blocked["isError"], serde_json::json!(true), "fm grant users:write via MCP must isError");
 
@@ -9153,8 +9123,7 @@ async fn test_users_mcp_grant_and_reset_gating() {
 
     // Owner doing the same via MCP succeeds.
     let owner_made = mcp_call(&server, &owner, "create_user", serde_json::json!({
-        "email": "mg_priv@example.com", "name": "P", "password": "pwpwpwpw",
-        "role": "dispatcher", "extra_scopes": ["users:write"]
+        "email": "mg_priv@example.com", "name": "P",        "role": "dispatcher", "extra_scopes": ["users:write"]
     })).await;
     assert_eq!(owner_made["extra_scopes"][0], "users:write");
 }
@@ -9178,8 +9147,7 @@ async fn test_setup_wizard_full_flow() {
     // POST /fleet/setup creates an owner and returns a session token.
     let created = server.post("/fleet/setup")
         .json(&serde_json::json!({
-            "email": "boss@example.com", "name": "The Boss", "password": "owner-password-1",
-        }))
+            "email": "boss@example.com", "name": "The Boss"        }))
         .await;
     assert_eq!(created.status_code(), 200, "setup failed: {}", created.text());
     let token = created.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
@@ -9195,8 +9163,7 @@ async fn test_setup_wizard_full_flow() {
     // Second POST is rejected — guard slammed shut.
     let again = server.post("/fleet/setup")
         .json(&serde_json::json!({
-            "email": "intruder@example.com", "name": "Nope", "password": "another-password",
-        }))
+            "email": "intruder@example.com", "name": "Nope"        }))
         .await;
     assert_eq!(again.status_code(), 409, "second setup must be 409 Conflict");
 
@@ -9257,8 +9224,7 @@ async fn test_setup_status_false_once_user_exists() {
     // And setup is closed.
     let attempt = server.post("/fleet/setup")
         .json(&serde_json::json!({
-            "email": "late@example.com", "name": "Late", "password": "late-password",
-        }))
+            "email": "late@example.com", "name": "Late"        }))
         .await;
     assert_eq!(attempt.status_code(), 409);
 }
