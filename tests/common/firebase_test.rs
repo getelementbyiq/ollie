@@ -2,8 +2,10 @@
 //! Firebase test helpers: generate RSA keys, sign ID tokens, mock JWKS server
 
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use rand_core::OsRng;
 use rsa::{RsaPrivateKey, RsaPublicKey};
-use rsa::pkcs1::EncodeRsaPublicKey;
+use rsa::traits::PublicKeyParts;
+use rsa::pkcs8::EncodePrivateKey;
 use serde_json::json;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -16,7 +18,7 @@ pub struct FirebaseTestHelper {
 
 impl FirebaseTestHelper {
     pub fn new(project_id: &str) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand_core::OsRng;
         let private_key = RsaPrivateKey::new(&mut rng, 2048).unwrap();
         let public_key = RsaPublicKey::from(&private_key);
         
@@ -50,8 +52,9 @@ impl FirebaseTestHelper {
             "name": email.split('@').next().unwrap_or("Test User"),
         });
 
-        let pem = self.private_key.to_pkcs8_pem(rsa::pkcs8::LineEnding::LF).unwrap();
-        let encoding_key = EncodingKey::from_rsa_pem(pem.as_bytes()).unwrap();
+        // jsonwebtoken requires DER format, not PEM
+        let der = self.private_key.to_pkcs8_der().unwrap();
+        let encoding_key = EncodingKey::from_rsa_der(der.as_bytes());
         
         encode(&header, &claims, &encoding_key).unwrap()
     }

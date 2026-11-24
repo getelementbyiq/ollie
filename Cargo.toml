@@ -66,6 +66,7 @@ rmcp = { version = "1.7", default-features = false, features = [
 axum-test = "17"
 tempfile = "3"
 rsa = "0.9"
+rand_core = "0.6"
 
 # Dev-loop profile. On macOS the dominant cost of `cargo test` is linking each
 # test binary's symbol table + debug map (~350 MB of __LINKEDIT per binary at

@@ -2511,12 +2511,15 @@ mod tests {
         );
         let auth_challenge_store = Arc::new(dashmap::DashMap::new());
         let reg_challenge_store = Arc::new(dashmap::DashMap::new());
+        let firebase = Arc::new(crate::firebase::FirebaseAuth::new("test-project-id"));
+        let elearning_sessions = Arc::new(dashmap::DashMap::new());
         let state = AppState {
             db,
             store,
             ai,
             geocoding,
             ors,
+            firebase,
             pipeline_tx,
             geocoding_tx,
             routing_tx,
@@ -2524,6 +2527,7 @@ mod tests {
             webauthn,
             auth_challenge_store,
             reg_challenge_store,
+            elearning_sessions,
         };
         (state, blob_dir, db_dir)
     }
