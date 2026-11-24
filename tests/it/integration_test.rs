@@ -50,6 +50,10 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
     let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
 
     let state = AppState {
         db, store, ai, geocoding, ors,
@@ -125,8 +129,8 @@ pub(crate) async fn setup_owner(server: &axum_test::TestServer) -> String {
     // Sign a Firebase ID token for the owner
     let firebase_id_token = fb_helper.sign_id_token(OWNER_EMAIL, "test-owner-uid", None);
     
-    // Login via Firebase endpoint
-    let resp = server.post("/fleet/auth/firebase-login")
+    // Login via Firebase endpoint (uses existing /fleet/auth/login with Firebase token)
+    let resp = server.post("/fleet/auth/login")
         .json(&serde_json::json!({
             "id_token": firebase_id_token
         }))
@@ -8391,7 +8395,7 @@ pub(crate) async fn login_with_role(
     let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
     let firebase_id_token = fb_helper.sign_id_token(email, &format!("test-uid-{}", email), None);
     
-    let login = server.post("/fleet/auth/firebase-login")
+    let login = server.post("/fleet/auth/login")
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     
