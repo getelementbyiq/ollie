@@ -1635,14 +1635,16 @@ async fn fleet_user_login(server: &axum_test::TestServer, email: &str, password:
         .json(&serde_json::json!({
             "email": email,
             "name": "Test Dispatcher",
-            "password": password,
             "role": "fleet_manager",
+            "status": "active",
         }))
         .await;
 
-    // Login and return JWT
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(email, &format!("test-uid-{}", email), None);
     let resp = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": email, "password": password }))
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(resp.status_code(), 200);
     resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
