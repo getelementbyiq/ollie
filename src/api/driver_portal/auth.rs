@@ -65,10 +65,8 @@ pub async fn login(
             AppError::Unauthorized
         })?;
 
-    let email = normalize_phone(&firebase_claims.email); // Using normalize_phone for consistent format
-    
     // Try to find driver by email first
-    let mut driver_opt = state.db.get_driver_by_email(&email).await.ok().flatten();
+    let mut driver_opt = state.db.get_driver_by_email(&firebase_claims.email).await.ok().flatten();
     
     // If not found by email and phone is available, try by phone
     if driver_opt.is_none() {

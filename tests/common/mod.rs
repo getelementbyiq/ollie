@@ -224,3 +224,47 @@ pub async fn seed_blob(
 pub fn ai_client(base_url: &str) -> OllamaClient {
     OllamaClient::new(base_url, "nomic-embed-text", "llama3.2", "moondream")
 }
+
+/// Create a driver with a unique email and return a Firebase-authenticated token.
+/// This is the shared helper for all driver authentication tests.
+pub async fn driver_with_firebase_login(
+    server: &axum_test::TestServer,
+    state: &ollie::AppState,
+    name: &str,
+) -> (String, uuid::Uuid) {
+    use axum::http::header;
+    
+    // Get owner token
+    let owner_token = crate::integration_test::setup_owner(server).await;
+    
+    // Create unique email for this driver
+    let driver_id = uuid::Uuid::new_v4();
+    let email = format!("driver-{}@example.com", driver_id);
+    
+    // Create driver with email
+    let resp = server.post("/fleet/api/v1/drivers")
+        .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
+        .json(&serde_json::json!({
+            "name": name,
+            "email": email
+        }))
+        .await;
+    
+    let created_id: uuid::Uuid = resp.json::<serde_json::Value>()["id"]
+        .as_str()
+        .unwrap()
+        .parse()
+        .unwrap();
+    
+    // Login with Firebase token
+    let fb_helper = firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(&email, &format!("test-driver-uid-{}", created_id), None);
+    let login_resp = server.post("/driver/api/v1/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    
+    assert_eq!(login_resp.status_code(), 200, "Driver Firebase login failed");
+    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    
+    (token, created_id)
+}

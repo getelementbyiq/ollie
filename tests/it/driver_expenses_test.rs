@@ -117,7 +117,7 @@ async fn setup_driver_with_intransit_trip_two_stops(
     // Login with Firebase token
     let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
     let firebase_id_token = fb_helper.sign_id_token(driver_email, &format!("test-driver-uid-{}", driver_id), None);
-    let login_resp = server.post("/driver/auth/login")
+    let login_resp = server.post("/driver/api/v1/auth/login")
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");

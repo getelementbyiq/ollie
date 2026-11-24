@@ -90,7 +90,7 @@ async fn driver_token(server: &TestServer, state: &AppState, driver_id: &str) ->
     // Login with Firebase token
     let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
     let firebase_id_token = fb_helper.sign_id_token(&email, &format!("test-driver-uid-{}", uuid), None);
-    let login_resp = server.post("/driver/auth/login")
+    let login_resp = server.post("/driver/api/v1/auth/login")
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");
@@ -103,7 +103,11 @@ async fn equipment_tab_shows_assignment_from_active_trip_and_persists_swap() {
 
     // Driver, truck, two trailers.
     let driver_id = admin_post(&server, "/fleet/api/v1/drivers",
-        serde_json::json!({ "name": "Repro Driver", "phone": "555-0100" })).await["id"]
+        serde_json::json!({ 
+            "name": "Repro Driver", 
+            "phone": "555-0100",
+            "email": "repro-driver@example.com"
+        })).await["id"]
         .as_str().unwrap().to_string();
     let truck_id = admin_post(&server, "/fleet/api/v1/trucks",
         serde_json::json!({ "unit_number": "TRK-1" })).await["id"]

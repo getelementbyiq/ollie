@@ -91,7 +91,10 @@ async fn setup_trip_with_internal_notes(server: &TestServer, state: &AppState) -
 
     let driver_id_str = server.post("/fleet/api/v1/drivers")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Internal Notes Driver" }))
+        .json(&serde_json::json!({ 
+            "name": "Internal Notes Driver",
+            "email": "test-driver@example.com"
+        }))
         .await
         .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
     let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
@@ -156,7 +159,7 @@ async fn setup_trip_with_internal_notes(server: &TestServer, state: &AppState) -
     // Login with Firebase token
     let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
     let firebase_id_token = fb_helper.sign_id_token("test-driver@example.com", &format!("test-driver-uid-{}", driver_id), None);
-    let login_resp = server.post("/driver/auth/login")
+    let login_resp = server.post("/driver/api/v1/auth/login")
         .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login_resp.status_code(), 200, "Driver login failed");
