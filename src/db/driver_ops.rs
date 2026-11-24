@@ -35,6 +35,16 @@ impl DbClient {
         Ok(records.into_iter().next())
     }
 
+    pub async fn get_driver_by_email(&self, email: &str) -> Result<Option<DriverRecord>, AppError> {
+        let escaped = email.replace('\'', "''");
+        let stream = self.driver_table.query()
+            .only_if(format!("email = '{escaped}'"))
+            .execute().await
+            .map_err(|e| AppError::Internal(e.to_string()))?;
+        let records = batches_to_drivers(collect_stream(stream).await?)?;
+        Ok(records.into_iter().next())
+    }
+
     pub async fn get_driver_by_id(&self, id: Uuid) -> Result<DriverRecord, AppError> {
         let id_str = id.to_string();
         let stream = self.driver_table.query()

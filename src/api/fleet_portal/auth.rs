@@ -202,7 +202,7 @@ pub async fn login(
 pub async fn refresh(
     State(_state): State<AppState>,
     _headers: HeaderMap,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<axum::http::StatusCode, AppError> {
     // Firebase tokens are refreshed client-side by the Firebase SDK
     Err(AppError::Unauthorized)
 }
