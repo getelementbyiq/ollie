@@ -38,6 +38,10 @@ async fn build_app() -> (TestServer, Arc<DbClient>, TempDir, TempDir) {
     std::env::set_var("DRIVER_RP_ORIGIN",        "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET",   "test-fleet_user-secret-must-be-32b");
     std::env::set_var("OLLIE_PUBLIC_BASE_URL",   TEST_BASE_URL);
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db     = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());

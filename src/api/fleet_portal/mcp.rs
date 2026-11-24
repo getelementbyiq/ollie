@@ -2488,6 +2488,10 @@ mod tests {
         std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-jwt-secret-that-is-long-enough");
         std::env::set_var("DRIVER_RP_ID", "localhost");
         std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
+        std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+        std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+        std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+        std::env::set_var("FIREBASE_APP_ID", "test-app-id");
         let config = Arc::new(Config::from_env().unwrap());
         let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
         let store = Arc::new(BlobStore::new(blob_dir.path().to_str().unwrap()));

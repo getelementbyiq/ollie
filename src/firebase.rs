@@ -185,15 +185,16 @@ impl FirebaseAuth {
 mod tests {
     use super::*;
     use jsonwebtoken::{encode, EncodingKey, Header};
+    use rsa::pkcs1::EncodeRsaPrivateKey;
     use rsa::pkcs8::EncodePrivateKey;
     use rsa::traits::PublicKeyParts;
     use rsa::{RsaPrivateKey, RsaPublicKey};
+    use rand::rngs::OsRng;
     use std::time::UNIX_EPOCH;
-    use rsa::pkcs1::EncodeRsaPublicKey;
 
     // Test helper: generate a test RSA key pair and create a token
-    fn generate_test_token(project_id: &str, email: &str) -> (String, String, String) {
-        let mut rng = rand_core::OsRng;
+    fn generate_test_token(project_id: &str, email: &str) -> (String, String, String, RsaPrivateKey, RsaPublicKey) {
+        let mut rng = OsRng;
         let bits = 2048;
         let priv_key = RsaPrivateKey::new(&mut rng, bits).unwrap();
         let pub_key = RsaPublicKey::from(&priv_key);
@@ -230,11 +231,11 @@ mod tests {
             name: Some("Test User".to_string()),
         };
 
-        let der = priv_key.to_pkcs8_der().unwrap();
+        let der = priv_key.to_pkcs1_der().unwrap();
         let encoding_key = EncodingKey::from_rsa_der(der.as_bytes());
         let token = encode(&header, &claims, &encoding_key).unwrap();
 
-        (token, n, e)
+        (token, n, e, priv_key, pub_key)
     }
 
     #[tokio::test]
@@ -242,7 +243,7 @@ mod tests {
         let project_id = "test-project-123";
         let email = "test@example.com";
         
-        let (token, n, e) = generate_test_token(project_id, email);
+        let (token, n, e, _priv_key, _pub_key) = generate_test_token(project_id, email);
 
         // Create a FirebaseAuth instance
         let fb = FirebaseAuth::new(project_id.to_string());
@@ -277,7 +278,7 @@ mod tests {
         let project_id = "test-project-123";
         let fb = FirebaseAuth::new(project_id.to_string());
 
-        let mut rng = rand_core::OsRng;
+        let mut rng = OsRng;
         let priv_key = RsaPrivateKey::new(&mut rng, 2048).unwrap();
         let pub_key = RsaPublicKey::from(&priv_key);
 
@@ -312,7 +313,7 @@ mod tests {
             name: Some("Test User".to_string()),
         };
 
-        let der = priv_key.to_pkcs8_der().unwrap();
+        let der = priv_key.to_pkcs1_der().unwrap();
         let encoding_key = EncodingKey::from_rsa_der(der.as_bytes());
         let token = encode(&header, &claims, &encoding_key).unwrap();
 
@@ -342,7 +343,7 @@ mod tests {
         let project_id = "test-project-123";
         let wrong_project = "wrong-project-456";
         
-        let (token, n, e) = generate_test_token(wrong_project, "test@example.com");
+        let (token, n, e, _priv_key, _pub_key) = generate_test_token(wrong_project, "test@example.com");
 
         let fb = FirebaseAuth::new(project_id.to_string());
 

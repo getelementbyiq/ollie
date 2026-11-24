@@ -4,7 +4,7 @@
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use rsa::{RsaPrivateKey, RsaPublicKey};
 use rsa::traits::PublicKeyParts;
-use rsa::pkcs8::EncodePrivateKey;
+use rsa::pkcs1::EncodeRsaPrivateKey;
 use serde_json::json;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -51,8 +51,8 @@ impl FirebaseTestHelper {
             "name": email.split('@').next().unwrap_or("Test User"),
         });
 
-        // jsonwebtoken requires DER format, not PEM
-        let der = self.private_key.to_pkcs8_der().unwrap();
+        // jsonwebtoken requires PKCS#1 DER format for RSA keys
+        let der = self.private_key.to_pkcs1_der().unwrap();
         let encoding_key = EncodingKey::from_rsa_der(der.as_bytes());
         
         encode(&header, &claims, &encoding_key).unwrap()
