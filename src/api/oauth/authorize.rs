@@ -38,8 +38,7 @@ pub struct AuthorizeForm {
     pub state: Option<String>,
     pub scope: Option<String>,
     pub resource: Option<String>,
-    pub email: String,
-    pub password: String,
+    pub id_token: String,
     pub decision: String,
 }
 
@@ -75,22 +74,51 @@ pub async fn authorize_page(
     };
     let client_label = client.client_name.clone().unwrap_or_else(|| client.id.to_string());
     let hidden = |k: &str, v: &str| format!(r#"<input type="hidden" name="{k}" value="{}">"#, h(v));
+    let firebase_config = serde_json::json!({
+        "apiKey": state.config.firebase_api_key,
+        "authDomain": state.config.firebase_auth_domain,
+        "projectId": state.config.firebase_project_id,
+        "appId": state.config.firebase_app_id,
+    });
     let page = format!(
         r#"<!doctype html><html><head><meta charset="utf-8"><title>Authorize Ollie</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>body{{font-family:system-ui;max-width:24rem;margin:3rem auto;padding:0 1rem}}
-input[type=email],input[type=password]{{display:block;width:100%;padding:.5rem;margin:.4rem 0;box-sizing:border-box}}
-button{{padding:.6rem 1rem;margin-right:.5rem}}</style></head>
+button{{padding:.6rem 1rem;margin-right:.5rem;cursor:pointer}}
+.btn-primary{{background:#0066cc;color:#fff;border:none;border-radius:4px}}
+.btn-secondary{{background:#ccc;color:#000;border:none;border-radius:4px}}
+#error{{color:red;margin:1rem 0}}</style></head>
 <body><h1>Connect to Ollie</h1>
 <p><strong>{client}</strong> wants to access your Ollie fleet account.</p>
-<form method="post" action="/oauth/authorize">
+<form id="oauth-form" method="post" action="/oauth/authorize">
 {p_rt}{p_cid}{p_ru}{p_cc}{p_ccm}{p_state}{p_scope}{p_res}
-<label>Email<input type="email" name="email" required autofocus></label>
-<label>Password<input type="password" name="password" required></label>
-<button type="submit" name="decision" value="allow">Allow</button>
-<button type="submit" name="decision" value="deny">Deny</button>
-</form></body></html>"#,
+<input type="hidden" name="id_token" id="id-token" value="">
+<button type="button" id="firebase-signin" class="btn-primary">Sign in with Google</button>
+<button type="submit" name="decision" value="deny" class="btn-secondary">Deny</button>
+</form>
+<div id="error"></div>
+<script type="module">
+const config = {firebase_config};
+const {{initializeApp}} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+const {{getAuth, signInWithPopup, GoogleAuthProvider}} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+const app = initializeApp(config);
+const auth = getAuth(app);
+document.getElementById('firebase-signin').addEventListener('click', async () => {{
+  try {{
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const idToken = await result.user.getIdToken();
+    document.getElementById('id-token').value = idToken;
+    document.getElementById('oauth-form').elements['decision'].value = 'allow';
+    document.getElementById('oauth-form').submit();
+  }} catch (err) {{
+    document.getElementById('error').textContent = 'Sign-in failed: ' + err.message;
+  }}
+}});
+</script>
+</body></html>"#,
         client = h(&client_label),
+        firebase_config = firebase_config,
         p_rt = hidden("response_type", &p.response_type),
         p_cid = hidden("client_id", &p.client_id),
         p_ru = hidden("redirect_uri", &p.redirect_uri),
@@ -124,47 +152,24 @@ pub async fn authorize_decision(
         return redirect_with(&f.redirect_uri, &format!("error=access_denied&state={}", urlencode(&state_q)));
     }
 
-    let email = f.email.trim().to_lowercase();
+    // Verify Firebase ID token
+    let firebase_claims = match state.firebase.verify_id_token(&f.id_token).await {
+        Ok(c) => c,
+        Err(_) => {
+            return (StatusCode::UNAUTHORIZED, Html("<h1>Invalid credentials</h1>".to_string())).into_response();
+        }
+    };
+
+    let email = firebase_claims.email.trim().to_lowercase();
     let fleet_user = match state.db.get_fleet_user_by_email(&email).await {
         Ok(Some(d)) => d,
         _ => {
-            // Equalize timing for unknown-email path: run bcrypt against a dummy hash (#107).
-            let pw = f.password.clone();
-            let dummy = crate::api::fleet_portal::auth::dummy_hash().to_string();
-            let _ = tokio::task::spawn_blocking(move || bcrypt::verify(&pw, &dummy)).await;
-            return (StatusCode::UNAUTHORIZED, Html("<h1>Invalid credentials</h1>".to_string())).into_response();
+            return (StatusCode::UNAUTHORIZED, Html("<h1>Unknown email</h1><p>No fleet user exists with this email address.</p>".to_string())).into_response();
         }
     };
 
     if fleet_user.status == FleetUserStatus::Inactive {
-        return (StatusCode::UNAUTHORIZED, Html("<h1>Invalid credentials</h1>".to_string())).into_response();
-    }
-
-    let mut creds = match state.db.get_fleet_user_credentials(fleet_user.id).await {
-        Ok(Some(c)) => c,
-        _ => {
-            // Equalize timing for missing-credentials path.
-            let pw = f.password.clone();
-            let dummy = crate::api::fleet_portal::auth::dummy_hash().to_string();
-            let _ = tokio::task::spawn_blocking(move || bcrypt::verify(&pw, &dummy)).await;
-            return (StatusCode::UNAUTHORIZED, Html("<h1>Invalid credentials</h1>".to_string())).into_response();
-        }
-    };
-
-    if let Some(locked_until) = creds.locked_until {
-        if locked_until > Utc::now() {
-            return (StatusCode::UNAUTHORIZED, Html("<h1>Invalid credentials</h1>".to_string())).into_response();
-        }
-    }
-
-    // Shared verify + lockout policy — increments failed_attempts / locks the
-    // account on failure, so OAuth can't be used to bypass the login lockout.
-    let ok = match crate::api::fleet_portal::auth::verify_fleet_user_password(&state, &mut creds, &f.password).await {
-        Ok(v) => v,
-        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Html("<h1>Server error</h1>".to_string())).into_response(),
-    };
-    if !ok {
-        return (StatusCode::UNAUTHORIZED, Html("<h1>Invalid credentials</h1>".to_string())).into_response();
+        return (StatusCode::UNAUTHORIZED, Html("<h1>Account inactive</h1>".to_string())).into_response();
     }
 
     let mut raw = [0u8; 32];
