@@ -16,6 +16,8 @@ use std::sync::Arc;
 use tempfile::TempDir;
 use webauthn_rs::prelude::{Url, WebauthnBuilder};
 
+const OWNER_EMAIL: &str = "owner@example.com";
+
 #[allow(clippy::type_complexity)]
 async fn test_server_with_state() -> (
     TestServer,
@@ -34,6 +36,7 @@ async fn test_server_with_state() -> (
     std::env::set_var("FIREBASE_API_KEY", "test-api-key");
     std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
     std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -105,6 +108,7 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
     std::env::set_var("FIREBASE_API_KEY", "test-api-key");
     std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
     std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());

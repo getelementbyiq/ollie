@@ -28,6 +28,11 @@ async fn test_server_with_db() -> (TestServer, Arc<DbClient>, TempDir, TempDir) 
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -53,6 +58,11 @@ async fn test_server_with_db() -> (TestServer, Arc<DbClient>, TempDir, TempDir) 
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
     let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
+    
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {

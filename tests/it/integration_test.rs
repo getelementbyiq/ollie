@@ -13,6 +13,9 @@ use std::sync::Arc;
 use tempfile::TempDir;
 use webauthn_rs::prelude::{Url, WebauthnBuilder};
 
+/// Fixed first-run owner credentials used by the dispatch-surface test helpers.
+pub(crate) const OWNER_EMAIL: &str = "owner@example.com";
+
 async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver<ollie::pipeline::PipelineJob>) {
     let blob_dir = TempDir::new().unwrap();
     let db_dir = TempDir::new().unwrap();
@@ -24,6 +27,7 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
     std::env::set_var("FIREBASE_API_KEY", "test-api-key");
     std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
     std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -76,6 +80,7 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
     std::env::set_var("FIREBASE_API_KEY", "test-api-key");
     std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
     std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -114,15 +119,9 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
     (server, blob_dir, db_dir, rx, state)
 }
 
-/// Fixed first-run owner credentials used by the dispatch-surface test helpers.
-pub(crate) const OWNER_EMAIL: &str = "owner@example.com";
-
 /// Returns an owner JWT for the dispatch surface using Firebase auth flow.
-/// Sets OLLIE_BOOTSTRAP_OWNER_EMAIL so the first Firebase login auto-creates the owner.
+/// The bootstrap email is already set in test_server(), so the first Firebase login auto-creates the owner.
 pub(crate) async fn setup_owner(server: &axum_test::TestServer) -> String {
-    // Set bootstrap email so first login creates owner
-    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
-    
     // Use the static test helper (already seeded in test server)
     let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
     
