@@ -47,6 +47,10 @@ async fn setup() -> (TestServer, TempDir, TempDir, async_channel::Receiver<ollie
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
     let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {

@@ -46,6 +46,10 @@ async fn setup() -> (TestServer, TempDir, TempDir, Receivers) {
     let webauthn = Arc::new(WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap());
 
     let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
 
     let state = AppState {
         db, store, ai, geocoding, ors,
