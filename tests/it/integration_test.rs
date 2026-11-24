@@ -3665,17 +3665,13 @@ async fn test_driver_stop_detail_includes_scheduled_arrive_utc() {
 
     let driver_id_str = server.post("/fleet/api/v1/drivers")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Sched UTC Driver" }))
+        .json(&serde_json::json!({ 
+            "name": "Sched UTC Driver",
+            "email": "test-driver@example.com"
+        }))
         .await
         .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
     let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-
-    let creds = ollie::models::DriverCredentials {
-        driver_id, pin_hash: None, token_version: 1,
-        failed_pin_attempts: 0, locked_until: None,
-        updated_at: chrono::Utc::now()
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
 
     let truck_id = server.post("/fleet/api/v1/trucks")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -4467,23 +4463,16 @@ async fn setup_driver_with_three_historical_trips(
     let driver_id_str = server
         .post("/fleet/api/v1/drivers")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Multi-Week Driver" }))
+        .json(&serde_json::json!({ 
+            "name": "Multi-Week Driver",
+            "email": "test-driver@example.com"
+        }))
         .await
         .json::<serde_json::Value>()["id"]
         .as_str()
         .unwrap()
         .to_string();
     let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-
-    let creds = ollie::models::DriverCredentials {
-        driver_id,
-        pin_hash: None,
-        token_version: 1,
-        failed_pin_attempts: 0,
-        locked_until: None,
-        updated_at: chrono::Utc::now()
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
 
     // Deliver 3 trips across 3 distinct calendar weeks (Sunday-aligned, America/New_York).
     // Week of 2026-05-10: deliver Tuesday 2026-05-12 14:00 UTC (10am ET)
