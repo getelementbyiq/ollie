@@ -7,6 +7,19 @@
 // (OLLIE_TESSERACT_BIN) that must not leak into the main suite.
 pub mod firebase_test;
 
+use std::sync::Arc;
+use std::time::Instant;
+
+/// Helper to create test Firebase and elearning_sessions instances
+pub fn test_firebase_fields() -> (
+    Arc<ollie::firebase::FirebaseAuth>,
+    Arc<dashmap::DashMap<String, (String, Instant)>>,
+) {
+    let firebase = Arc::new(ollie::firebase::FirebaseAuth::new("test-project-id".to_string()));
+    let elearning_sessions = Arc::new(dashmap::DashMap::new());
+    (firebase, elearning_sessions)
+}
+
 use axum::{response::IntoResponse, routing::post, Json, Router};
 use bytes::Bytes;
 use chrono::Utc;

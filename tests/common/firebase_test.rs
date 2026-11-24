@@ -2,7 +2,6 @@
 //! Firebase test helpers: generate RSA keys, sign ID tokens, mock JWKS server
 
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
-use rand_core::OsRng;
 use rsa::{RsaPrivateKey, RsaPublicKey};
 use rsa::traits::PublicKeyParts;
 use rsa::pkcs8::EncodePrivateKey;

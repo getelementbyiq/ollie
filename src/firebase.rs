@@ -80,7 +80,6 @@ impl FirebaseAuth {
     }
 
     /// Test-only: seed the JWKS cache with pre-generated keys (bypasses HTTP fetch)
-    #[cfg(test)]
     pub async fn seed_jwks_cache_for_test(&self, cache: JwksCache) {
         let mut guard = self.jwks_cache.write().await;
         *guard = Some(cache);

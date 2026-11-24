@@ -73,6 +73,7 @@ async fn test_http_listener_serves_while_startup_recovery_is_blocked() {
 
     let rp_origin = Url::parse("http://localhost:3000").unwrap();
     let webauthn = Arc::new(WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
 
     let state = AppState {
         db, store, ai, geocoding, ors,
@@ -80,6 +81,7 @@ async fn test_http_listener_serves_while_startup_recovery_is_blocked() {
         webauthn,
         auth_challenge_store: Arc::new(dashmap::DashMap::new()),
         reg_challenge_store: Arc::new(dashmap::DashMap::new()),
+        firebase, elearning_sessions,
     };
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();

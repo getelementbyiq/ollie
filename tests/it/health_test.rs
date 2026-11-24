@@ -41,12 +41,16 @@ async fn setup() -> (TestServer, TempDir, TempDir, Receivers) {
     let rp_origin = Url::parse("http://localhost:3000").unwrap();
     let webauthn = Arc::new(WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap());
 
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn,
         auth_challenge_store: Arc::new(dashmap::DashMap::new()),
+        firebase,
         reg_challenge_store: Arc::new(dashmap::DashMap::new()),
+        elearning_sessions,
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, blob_dir, db_dir, (prx, grx, rrx))
