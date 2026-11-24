@@ -21,7 +21,7 @@ mod expenses_test;
 mod fleet_pagination_test;
 mod fleet_static_cache_test;
 mod health_test;
-mod integration_test;
+pub mod integration_test;
 mod load_delivery_cascade_test;
 mod maintenance_test;
 mod migration_test;

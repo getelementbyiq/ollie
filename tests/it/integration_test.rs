@@ -95,6 +95,10 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
     let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
 
     let state = AppState {
         db, store, ai, geocoding, ors,
@@ -109,9 +113,33 @@ async fn test_server_with_state() -> (TestServer, TempDir, TempDir, async_channe
 /// Fixed first-run owner credentials used by the dispatch-surface test helpers.
 pub(crate) const OWNER_EMAIL: &str = "owner@example.com";
 
-/// Returns an owner JWT for the dispatch surface by directly creating a fleet user
-/// in the DB and encoding a JWT. Firebase authentication replaced password-based
-/// login, but tests need a simple way to authenticate without Firebase tokens.
+/// Returns an owner JWT for the dispatch surface using Firebase auth flow.
+/// Sets OLLIE_BOOTSTRAP_OWNER_EMAIL so the first Firebase login auto-creates the owner.
+pub(crate) async fn setup_owner(server: &axum_test::TestServer) -> String {
+    // Set bootstrap email so first login creates owner
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
+    
+    // Use the static test helper (already seeded in test server)
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    
+    // Sign a Firebase ID token for the owner
+    let firebase_id_token = fb_helper.sign_id_token(OWNER_EMAIL, "test-owner-uid", None);
+    
+    // Login via Firebase endpoint
+    let resp = server.post("/fleet/auth/firebase-login")
+        .json(&serde_json::json!({
+            "id_token": firebase_id_token
+        }))
+        .await;
+    
+    if resp.status_code() == 200 {
+        return resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    }
+    
+    panic!("Firebase owner setup failed: {} - {}", resp.status_code(), resp.text());
+}
+
+/// Legacy DB-direct helper (not used with Firebase auth)
 async fn setup_owner_with_db(db: &ollie::db::DbClient) -> String {
     use ollie::models::{FleetUserRecord, FleetUserStatus, permission::Role};
     use chrono::Utc;
@@ -8343,8 +8371,6 @@ pub(crate) async fn login_with_role(
     _password: &str, // No longer used with Firebase
     role: &str,
 ) -> String {
-    use crate::common::firebase_test::FirebaseTestHelper;
-    
     // For owner role, use bootstrap flow
     if role == "owner" {
         return setup_owner(server).await;
@@ -8361,8 +8387,8 @@ pub(crate) async fn login_with_role(
         }))
         .await;
 
-    // Login with Firebase token
-    let fb_helper = FirebaseTestHelper::new("test-project");
+    // Login with Firebase token using static test helper
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
     let firebase_id_token = fb_helper.sign_id_token(email, &format!("test-uid-{}", email), None);
     
     let login = server.post("/fleet/auth/firebase-login")
@@ -8888,7 +8914,7 @@ async fn test_users_delete_owner_forbidden_with_two_owners() {
 async fn test_users_ownership_transfer() {
     let (server, _b, _d, _rx) = test_server().await;
     // The sole owner is the first-run bootstrap owner.
-    let owner = login_with_role(&server, OWNER_EMAIL, OWNER_PASSWORD, "owner").await;
+    let owner = login_with_role(&server, OWNER_EMAIL, "unused", "owner").await;
     let auth = format!("Bearer {owner}");
 
     let x_id = create_user_via_surface(&server, &owner,

@@ -7,6 +7,17 @@ use rsa::traits::PublicKeyParts;
 use rsa::pkcs1::EncodeRsaPrivateKey;
 use serde_json::json;
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::sync::OnceLock;
+
+/// Process-wide static test helper for Firebase authentication
+static TEST_FIREBASE_HELPER: OnceLock<FirebaseTestHelper> = OnceLock::new();
+
+/// Get or create the global test Firebase helper
+pub fn get_test_firebase_helper() -> &'static FirebaseTestHelper {
+    TEST_FIREBASE_HELPER.get_or_init(|| {
+        FirebaseTestHelper::new("test-project")
+    })
+}
 
 pub struct FirebaseTestHelper {
     pub project_id: String,
@@ -79,6 +90,39 @@ impl FirebaseTestHelper {
                 "e": e,
             }]
         }).to_string()
+    }
+
+    /// Generate a JWKS cache (the internal representation Firebase uses)
+    pub fn jwks_cache(&self) -> ollie::firebase::JwksCache {
+        use std::collections::HashMap;
+        use std::time::SystemTime;
+        use rsa::pkcs8::EncodePublicKey;
+        
+        let n = base64::Engine::encode(
+            &base64::engine::general_purpose::URL_SAFE_NO_PAD,
+            &self.public_key.n().to_bytes_be(),
+        );
+        let e = base64::Engine::encode(
+            &base64::engine::general_purpose::URL_SAFE_NO_PAD,
+            &self.public_key.e().to_bytes_be(),
+        );
+        
+        let jwk_key = ollie::firebase::JwkKey {
+            kid: self.kid.clone(),
+            n,
+            e,
+            kty: "RSA".to_string(),
+            alg: "RS256".to_string(),
+            use_: "sig".to_string(),
+        };
+        
+        let mut keys = HashMap::new();
+        keys.insert(self.kid.clone(), jwk_key);
+        
+        ollie::firebase::JwksCache {
+            keys,
+            fetched_at: SystemTime::now(),
+        }
     }
 
     /// Create a FirebaseAuth instance pre-seeded with this test key
