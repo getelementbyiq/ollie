@@ -189,7 +189,9 @@ async fn metadata_endpoints() {
 }
 
 /// 4. Full OAuth dance: register → authorize → token → MCP call → refresh.
+/// REMOVED: Tests password-based OAuth consent which was replaced by Firebase
 #[tokio::test]
+#[ignore = "password-based OAuth consent removed in favor of Firebase"]
 async fn full_oauth_dance() {
     let (server, db, _b, _d) = build_app().await;
 
@@ -380,7 +382,9 @@ async fn olld_api_key_authenticates_mcp() {
 }
 
 /// 5. Bad PKCE verifier → 400 with error == "invalid_grant".
+/// REMOVED: Tests password-based authorization which was replaced by Firebase
 #[tokio::test]
+#[ignore = "password-based authorization removed in favor of Firebase"]
 async fn token_rejects_bad_pkce() {
     let (server, db, _b, _d) = build_app().await;
 
