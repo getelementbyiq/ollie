@@ -4350,6 +4350,7 @@ dependencies = [
  "mime_guess",
  "pdf-extract",
  "rand 0.9.4",
+ "rand_core 0.6.4",
  "reqwest",
  "rmcp",
  "rsa",

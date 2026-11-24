@@ -127,7 +127,7 @@ mod tests {
         );
         let auth_challenge_store = Arc::new(dashmap::DashMap::new());
         let reg_challenge_store = Arc::new(dashmap::DashMap::new());
-        let firebase = Arc::new(crate::firebase::FirebaseAuth::new("test-project-id"));
+        let firebase = Arc::new(crate::firebase::FirebaseAuth::new("test-project-id".to_string()));
         let elearning_sessions = Arc::new(dashmap::DashMap::new());
         let state = AppState {
             db, store, ai, geocoding, ors, firebase,

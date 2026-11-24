@@ -189,6 +189,7 @@ mod tests {
     use rsa::pkcs8::EncodePrivateKey;
     use rsa::traits::PublicKeyParts;
     use rsa::{RsaPrivateKey, RsaPublicKey};
+    use std::time::UNIX_EPOCH;
     use rsa::pkcs1::EncodeRsaPublicKey;
 
     // Test helper: generate a test RSA key pair and create a token
