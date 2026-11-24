@@ -31,6 +31,7 @@ async fn setup() -> (TestServer, AppState, TempDir, TempDir, async_channel::Rece
     std::env::set_var("FIREBASE_API_KEY", "test-api-key");
     std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
     std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());

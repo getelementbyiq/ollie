@@ -16,8 +16,6 @@ use std::sync::Arc;
 use tempfile::TempDir;
 use webauthn_rs::prelude::{Url, WebauthnBuilder};
 
-const OWNER_EMAIL: &str = "owner@example.com";
-
 #[allow(clippy::type_complexity)]
 async fn test_server_with_state() -> (
     TestServer,
