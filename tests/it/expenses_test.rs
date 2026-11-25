@@ -10,7 +10,7 @@ use ollie::{
     config::Config,
     db::DbClient,
     storage::BlobStore,
-    AppState,
+    AppState
 };
 use std::sync::Arc;
 use tempfile::TempDir;
@@ -30,6 +30,11 @@ async fn test_server_with_state() -> (
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -49,31 +54,41 @@ async fn test_server_with_state() -> (
         WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions
     };
     let server = TestServer::new(api::router(state.clone())).unwrap();
     (server, blob_dir, db_dir, rx, state)
 }
 
-/// Create a dispatcher user via the users API (owner-authenticated) and log in,
+/// Create a dispatcher user via the users API (owner-authenticated) and log in with Firebase,
 /// returning the dispatcher's JWT.
 async fn create_dispatcher_and_login(server: &TestServer, owner: &str) -> String {
+    use crate::common::firebase_test::get_test_firebase_helper;
+    
     let email = "dispatcher@example.com";
-    let password = "dispatcher-password-123";
     let create = server.post("/fleet/api/v1/users")
         .authorization_bearer(owner)
         .json(&serde_json::json!({
-            "email": email, "name": "Dispatcher", "password": password, "role": "dispatcher",
-        }))
+            "email": email, "name": "Dispatcher", "role": "dispatcher", "status": "active"        }))
         .await;
     assert_eq!(create.status_code(), 201, "dispatcher create failed");
+    
+    // Login with Firebase token
+    let fb_helper = get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(email, "test-dispatcher-uid", None);
     let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": email, "password": password }))
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(login.status_code(), 200, "dispatcher login failed");
     login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
@@ -86,6 +101,11 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -110,36 +130,27 @@ async fn test_server() -> (TestServer, TempDir, TempDir, async_channel::Receiver
             .unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, blob_dir, db_dir, rx)
 }
 
-const OWNER_EMAIL: &str = "owner@example.com";
-const OWNER_PASSWORD: &str = "owner-password-123";
 
 /// First-run owner bootstrap (idempotent), returning an owner JWT.
-async fn setup_owner(server: &TestServer) -> String {
-    let resp = server.post("/fleet/setup")
-        .json(&serde_json::json!({
-            "email": OWNER_EMAIL, "name": "Owner", "password": OWNER_PASSWORD,
-        }))
-        .await;
-    if resp.status_code() == 200 {
-        return resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
-    }
-    let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": OWNER_EMAIL, "password": OWNER_PASSWORD }))
-        .await;
-    assert_eq!(login.status_code(), 200, "owner login failed");
-    login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
-}
+// setup_owner now provided by shared integration_test.rs module
+use crate::integration_test::{setup_owner, OWNER_EMAIL};
 
 async fn create_expense(server: &TestServer, token: &str, category: &str) -> String {
     let resp = server.post("/fleet/api/v1/expenses")
@@ -167,7 +178,7 @@ async fn create_maintenance_unlinked(
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": desc,
+            "description": desc
         })).await;
     assert_eq!(m.status_code(), 201);
     m.json::<serde_json::Value>()["id"].as_str().unwrap().to_string()
@@ -204,7 +215,7 @@ async fn test_create_expense_validates_links() {
         .authorization_bearer(&token)
         .json(&serde_json::json!({
             "category": "repair",
-            "driver_id": uuid::Uuid::new_v4(),
+            "driver_id": uuid::Uuid::new_v4()
         })).await;
     assert_eq!(resp.status_code(), 400);
     // equipment_type without equipment_id -> 400
@@ -447,7 +458,7 @@ async fn test_maintenance_expense_crosslink_and_cost_mirror() {
         let r = server.post("/fleet/api/v1/expenses")
             .authorization_bearer(&token)
             .json(&serde_json::json!({
-                "category": "repair", "equipment_type": "truck", "equipment_id": truck_id,
+                "category": "repair", "equipment_type": "truck", "equipment_id": truck_id
             })).await;
         assert_eq!(r.status_code(), 201);
         r.json::<serde_json::Value>()["id"].as_str().unwrap().to_string()
@@ -458,7 +469,7 @@ async fn test_maintenance_expense_crosslink_and_cost_mirror() {
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
             "description": "roadside tire replacement",
-            "expense_id": exp_id,
+            "expense_id": exp_id
         })).await;
     assert_eq!(m.status_code(), 201);
     let mid = m.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -496,7 +507,7 @@ async fn test_patch_linking_expense_rejects_cost_in_same_body() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "unlinked oil change",
+            "description": "unlinked oil change"
         })).await;
     assert_eq!(m.status_code(), 201);
     let mid = m.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -520,7 +531,7 @@ async fn test_expense_cannot_double_link() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "first repair", "expense_id": exp_id,
+            "description": "first repair", "expense_id": exp_id
         })).await;
     assert_eq!(a.status_code(), 201);
 
@@ -529,7 +540,7 @@ async fn test_expense_cannot_double_link() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "second repair, same expense", "expense_id": exp_id,
+            "description": "second repair, same expense", "expense_id": exp_id
         })).await;
     assert_eq!(b.status_code(), 400);
 
@@ -538,7 +549,7 @@ async fn test_expense_cannot_double_link() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "third repair, unlinked",
+            "description": "third repair, unlinked"
         })).await;
     assert_eq!(c.status_code(), 201);
     let cid = c.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -562,7 +573,7 @@ async fn test_maintenance_cannot_repoint_linked_expense() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "first repair", "expense_id": exp_x,
+            "description": "first repair", "expense_id": exp_x
         })).await;
     assert_eq!(a.status_code(), 201);
     let aid = a.json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
@@ -860,7 +871,7 @@ async fn test_warranty_maintenance_needs_no_expense() {
         .json(&serde_json::json!({
             "equipment_type": "truck", "equipment_id": truck_id,
             "service_date": "2026-07-20", "category": "repair",
-            "description": "warranty turbo replacement", "cost": 0.0,
+            "description": "warranty turbo replacement", "cost": 0.0
         })).await;
     assert_eq!(m.status_code(), 201);
     let body: serde_json::Value = m.json();

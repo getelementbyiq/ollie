@@ -42,7 +42,9 @@ fn normalize_email(email: &str) -> String {
 pub struct CreateUserRequest {
     pub email: String,
     pub name: String,
-    pub password: String,
+    /// Optional password (deprecated with Firebase auth; ignored if provided)
+    #[serde(default)]
+    pub password: Option<String>,
     pub role: Role,
     #[serde(default)]
     pub extra_scopes: Option<Vec<String>>,
@@ -159,7 +161,14 @@ pub async fn apply_create_user(
     };
     state.db.insert_fleet_user(&record).await?;
 
-    let password_hash = hash_password(req.password).await?;
+    // Always create credentials record (required for API key auth and token versioning)
+    let password_hash = if let Some(password) = req.password {
+        hash_password(password).await?
+    } else {
+        // Firebase-only users get empty password hash
+        String::new()
+    };
+    
     let creds = FleetUserCredentials {
         fleet_user_id: id,
         password_hash,

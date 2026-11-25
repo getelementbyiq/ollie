@@ -54,12 +54,14 @@ async fn build_app() -> (TestServer, Arc<DbClient>, TempDir, TempDir) {
         WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
     let reg_challenge_store  = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db: db.clone(), store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions,
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, db, blob_dir, db_dir)
@@ -132,7 +134,9 @@ fn cookie_header(secret: &str) -> String {
 // ---------------------------------------------------------------------------
 
 /// 1. Login sets the refresh cookie with the correct attributes.
+/// IGNORED: Password-based login and refresh tokens removed in Firebase auth migration.
 #[tokio::test]
+#[ignore]
 async fn login_sets_refresh_cookie() {
     let (server, db, _b, _d) = build_app().await;
     seed_fleet_user(&db, "disp@example.com", "correct horse").await;
@@ -160,7 +164,9 @@ async fn login_sets_refresh_cookie() {
 }
 
 /// 2. Key regression: refresh works with only the cookie — no Authorization header needed.
+/// IGNORED: Password-based refresh tokens removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn refresh_after_access_expiry() {
     let (server, db, _b, _d) = build_app().await;
     seed_fleet_user(&db, "disp2@example.com", "correct horse").await;
@@ -191,7 +197,9 @@ async fn refresh_after_access_expiry() {
 }
 
 /// 3. Refresh rotates the secret; the old (consumed) token is rejected.
+/// IGNORED: Password-based refresh tokens removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn refresh_rotates_secret() {
     let (server, db, _b, _d) = build_app().await;
     seed_fleet_user(&db, "disp3@example.com", "correct horse").await;
@@ -217,7 +225,9 @@ async fn refresh_rotates_secret() {
 }
 
 /// 4. Replaying a consumed token revokes the whole family; C1 also becomes invalid.
+/// IGNORED: Password-based refresh tokens removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn reused_refresh_revokes_family() {
     let (server, db, _b, _d) = build_app().await;
     seed_fleet_user(&db, "disp4@example.com", "correct horse").await;
@@ -247,7 +257,9 @@ async fn reused_refresh_revokes_family() {
 }
 
 /// 5. Logout revokes the token and sets a clearing cookie (Max-Age=0).
+/// IGNORED: Password-based refresh tokens removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn logout_revokes_and_clears() {
     let (server, db, _b, _d) = build_app().await;
     seed_fleet_user(&db, "disp5@example.com", "correct horse").await;
@@ -276,7 +288,9 @@ async fn logout_revokes_and_clears() {
 }
 
 /// 6. Bumping token_version in the DB invalidates an existing refresh token.
+/// IGNORED: Password-based refresh tokens removed in Firebase auth migration
 #[tokio::test]
+#[ignore]
 async fn token_version_bump_kills_refresh() {
     let (server, db, _b, _d) = build_app().await;
     let id = seed_fleet_user(&db, "disp6@example.com", "correct horse").await;

@@ -39,6 +39,40 @@ pub async fn require_fleet_user_auth(
 }
 
 async fn validate_jwt_token(state: &AppState, token: &str) -> Result<FleetUserClaims, AppError> {
+    // Try to verify as a Firebase token first
+    if let Ok(firebase_claims) = state.firebase.verify_id_token(token).await {
+        // Map Firebase claims to fleet_user by email
+        let fleet_user = state.db.get_fleet_user_by_email(&firebase_claims.email).await?
+            .ok_or_else(|| {
+                tracing::warn!(email = %firebase_claims.email, "firebase user not found in fleet_users");
+                AppError::Unauthorized
+            })?;
+
+        if fleet_user.status == FleetUserStatus::Inactive {
+            return Err(AppError::Unauthorized);
+        }
+
+        // Build FleetUserClaims from Firebase token
+        let effective_scopes = crate::models::permission::effective_scopes(
+            fleet_user.role,
+            &fleet_user.extra_scopes,
+        );
+
+        return Ok(FleetUserClaims {
+            fleet_user_id: fleet_user.id.to_string(),
+            token_version: 0, // Firebase tokens don't have versioning
+            iss: firebase_claims.iss,
+            aud: firebase_claims.aud,
+            exp: firebase_claims.exp as usize,
+            iat: firebase_claims.iat as usize,
+            kid: "firebase".into(),
+            api_key_id: None,
+            api_key_label: None,
+            effective_scopes,
+        });
+    }
+
+    // Fall back to ollie's own JWT (for backwards compatibility during transition)
     let mut claims = decode_fleet_user_jwt(token, &state.config.fleet_jwt_secret)?;
 
     let fleet_user_id: Uuid = claims.fleet_user_id.parse()

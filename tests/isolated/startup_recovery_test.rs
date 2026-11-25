@@ -49,6 +49,10 @@ async fn test_http_listener_serves_while_startup_recovery_is_blocked() {
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -73,6 +77,7 @@ async fn test_http_listener_serves_while_startup_recovery_is_blocked() {
 
     let rp_origin = Url::parse("http://localhost:3000").unwrap();
     let webauthn = Arc::new(WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
 
     let state = AppState {
         db, store, ai, geocoding, ors,
@@ -80,6 +85,7 @@ async fn test_http_listener_serves_while_startup_recovery_is_blocked() {
         webauthn,
         auth_challenge_store: Arc::new(dashmap::DashMap::new()),
         reg_challenge_store: Arc::new(dashmap::DashMap::new()),
+        firebase, elearning_sessions,
     };
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();

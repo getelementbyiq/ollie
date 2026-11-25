@@ -5,6 +5,7 @@ pub mod config;
 pub mod db;
 pub mod error;
 pub mod events;
+pub mod firebase;
 pub mod geocoding;
 pub mod models;
 pub mod pipeline;
@@ -16,6 +17,7 @@ pub mod storage;
 use ai::OllamaClient;
 use config::Config;
 use db::DbClient;
+use firebase::FirebaseAuth;
 use geocoding::GeocodingClient;
 use routing::RoutingClient;
 use std::sync::Arc;
@@ -31,6 +33,7 @@ pub struct AppState {
     pub ai: Arc<OllamaClient>,
     pub geocoding: Arc<GeocodingClient>,
     pub ors: Arc<RoutingClient>,
+    pub firebase: Arc<FirebaseAuth>,
     pub pipeline_tx: async_channel::Sender<pipeline::PipelineJob>,
     pub geocoding_tx: async_channel::Sender<Uuid>,
     pub routing_tx: async_channel::Sender<Uuid>,
@@ -38,4 +41,6 @@ pub struct AppState {
     pub webauthn: Arc<webauthn_rs::Webauthn>,
     pub auth_challenge_store: Arc<dashmap::DashMap<Uuid, (PasskeyAuthentication, Instant)>>,
     pub reg_challenge_store: Arc<dashmap::DashMap<Uuid, (PasskeyRegistration, Instant)>>,
+    // Session store for /elearning cookie-based auth: session_id -> (user_email, created_at)
+    pub elearning_sessions: Arc<dashmap::DashMap<String, (String, Instant)>>,
 }

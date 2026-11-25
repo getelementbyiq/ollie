@@ -28,6 +28,7 @@ const ICON_EXPENSES = make('<path d="M4 2v20l2-1.5L8 22l2-1.5L12 22l2-1.5L16 22l
 const ICON_KEY = make('<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>');
 const ICON_CHEV_UP = make('<polyline points="18 15 12 9 6 15"/>');
 const ICON_LOGOUT = make('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>');
+const ICON_ELEARNING = make('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>');
 
 export const homeIcon = () => ICON_HOME.cloneNode(true);
 export const loadsIcon = () => ICON_LOADS.cloneNode(true);
@@ -44,3 +45,4 @@ export const documentsIcon = () => ICON_DOCUMENTS.cloneNode(true);
 export const keyIcon = () => ICON_KEY.cloneNode(true);
 export const chevronUpIcon = () => ICON_CHEV_UP.cloneNode(true);
 export const logoutIcon = () => ICON_LOGOUT.cloneNode(true);
+export const elearningIcon = () => ICON_ELEARNING.cloneNode(true);

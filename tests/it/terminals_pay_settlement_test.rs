@@ -10,7 +10,7 @@ use ollie::{
     config::Config,
     db::DbClient,
     storage::BlobStore,
-    AppState,
+    AppState
 };
 use std::sync::Arc;
 use tempfile::TempDir;
@@ -28,6 +28,11 @@ async fn test_server_with_db() -> (TestServer, Arc<DbClient>, TempDir, TempDir) 
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -52,42 +57,34 @@ async fn test_server_with_db() -> (TestServer, Arc<DbClient>, TempDir, TempDir) 
             .unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
+    
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions
     };
     let db_handle = state.db.clone();
     let server = TestServer::new(api::router(state)).unwrap();
     (server, db_handle, blob_dir, db_dir)
 }
 
-const OWNER_EMAIL: &str = "owner@example.com";
-const OWNER_PASSWORD: &str = "owner-password-123";
 
 /// First-run owner bootstrap (idempotent), returning an owner JWT.
-async fn setup_owner(server: &TestServer) -> String {
-    let resp = server.post("/fleet/setup")
-        .json(&serde_json::json!({
-            "email": OWNER_EMAIL, "name": "Owner", "password": OWNER_PASSWORD,
-        }))
-        .await;
-    if resp.status_code() == 200 {
-        return resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
-    }
-    let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": OWNER_EMAIL, "password": OWNER_PASSWORD }))
-        .await;
-    assert_eq!(login.status_code(), 200, "owner login failed");
-    login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
-}
+// setup_owner now provided by shared integration_test.rs module
+use crate::integration_test::{setup_owner, OWNER_EMAIL};
 
 /// Create a fleet_user account and log in, returning a JWT. Provisioned as
 /// `owner` so these terminal/pay/settlement tests (which write terminals and
 /// settle trips) pass scope enforcement (#331).
-async fn fleet_user_login(server: &TestServer, email: &str, password: &str) -> String {
+async fn fleet_user_login(server: &TestServer, email: &str, _password: &str) -> String {
     // Bootstrap the first-run owner, then create the named user via the users surface.
     // `fleet_manager` is operationally identical to owner (effective scope
     // `["*"]`) but creatable via the users surface (owner is not).
@@ -97,14 +94,15 @@ async fn fleet_user_login(server: &TestServer, email: &str, password: &str) -> S
         .json(&serde_json::json!({
             "email": email,
             "name": "Test Dispatcher",
-            "password": password,
-            "role": "fleet_manager",
+            "role": "fleet_manager"
         }))
         .await;
 
-    // Login and return JWT
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(email, &format!("test-uid-{}", email), None);
     let resp = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": email, "password": password }))
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
         .await;
     assert_eq!(resp.status_code(), 200, "fleet_user login failed");
     resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
@@ -371,7 +369,7 @@ async fn test_driver_pay_on_trip_detail_uses_resolved_rates() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -420,7 +418,7 @@ async fn test_driver_pay_on_trip_detail_uses_resolved_rates() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -479,7 +477,7 @@ async fn test_driver_pay_present_for_tonu_shaped_trip_with_deadhead_only() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -527,7 +525,7 @@ async fn test_driver_pay_present_for_tonu_shaped_trip_with_deadhead_only() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -561,7 +559,7 @@ async fn test_driver_pay_absent_when_no_miles_at_all() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -607,7 +605,7 @@ async fn test_driver_pay_absent_when_no_miles_at_all() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -642,7 +640,7 @@ async fn test_driver_pay_bills_detention_when_a_tonu_trip_has_no_miles() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -674,7 +672,7 @@ async fn test_driver_pay_bills_detention_when_a_tonu_trip_has_no_miles() {
         notes: None,
         timezone: Some("America/Chicago".into()),
         actual_arrive_utc: None,
-        actual_depart_utc: None,
+        actual_depart_utc: None
     };
     let now = chrono::Utc::now();
     let trip_id = uuid::Uuid::new_v4();
@@ -710,7 +708,7 @@ async fn test_driver_pay_bills_detention_when_a_tonu_trip_has_no_miles() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -748,7 +746,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
             "loaded_rate_per_mile": 0.50,
             "deadhead_rate_per_mile": 0.40,
             "extra_stop_fee": 30.0,
-            "detention_rate_per_hour": 20.0,
+            "detention_rate_per_hour": 20.0
         }))
         .await;
     assert_eq!(put.status_code(), 200);
@@ -782,7 +780,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
         notes: None,
         timezone: Some("America/New_York".into()),
         actual_arrive_utc: None,
-        actual_depart_utc: None,
+        actual_depart_utc: None
     };
     let trip = TripRecord {
         internal_notes: None,
@@ -815,7 +813,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
         embedding: None,
         owner_id: 0,
         created_at: now,
-        updated_at: now,
+        updated_at: now
     };
     db.insert_trip(&trip).await.unwrap();
 
@@ -834,7 +832,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
         .json(&serde_json::json!({
             "settlement_ref": "S-2026-009",
             "pay_period_start": "2026-05-25",
-            "pay_period_end": "2026-05-31",
+            "pay_period_end": "2026-05-31"
         }))
         .await;
     assert_eq!(patch.status_code(), 200, "settlement patch failed: {:?}", patch.text());
@@ -939,7 +937,7 @@ async fn test_settlement_freezes_pay_and_locks_edits() {
 mod migration_guard {
     use arrow_array::{
         FixedSizeListArray, Float64Array, Int64Array, RecordBatch, RecordBatchIterator,
-        RecordBatchReader, StringArray,
+        RecordBatchReader, StringArray
     };
     use arrow_schema::{DataType, Field, Schema};
     use chrono::Utc;

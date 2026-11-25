@@ -5,6 +5,7 @@ pub mod refresh_tokens;
 pub mod utils;
 pub mod version;
 pub mod blobs;
+pub mod elearning;
 pub mod fleet_portal;
 pub mod driver_portal;
 pub mod drivers;
@@ -30,9 +31,7 @@ use utoipa::openapi::security::{Http, HttpAuthScheme, SecurityScheme};
 #[openapi(
     paths(
         fleet_portal::auth::login,
-        fleet_portal::auth::refresh,
-        fleet_portal::auth::setup_status,
-        fleet_portal::auth::setup,
+        fleet_portal::auth::firebase_config,
         fleet_portal::data::list_loads,
         fleet_portal::data::get_load,
         fleet_portal::data::create_load,
@@ -272,11 +271,9 @@ use utoipa::openapi::security::{Http, HttpAuthScheme, SecurityScheme};
             fleet_portal::users::UpdateUserRequest,
             fleet_portal::users::ResetUserPasswordRequest,
             fleet_portal::users::UserListResponse,
-            fleet_portal::auth::LoginRequest,
+            fleet_portal::auth::FirebaseLoginRequest,
             fleet_portal::auth::LoginResponse,
-            fleet_portal::auth::LockResponse,
-            fleet_portal::auth::SetupRequest,
-            fleet_portal::auth::SetupStatusResponse,
+            fleet_portal::auth::FirebaseConfigResponse,
             version::VersionResponse,
             version::HealthResponse,
             version::PipelineHealth,
@@ -698,6 +695,7 @@ pub fn router(state: AppState) -> Router {
         .merge(fleet_user_auth)
         .merge(fleet_user_public)
         .merge(driver_portal)
+        .merge(elearning::elearning_router(&state))
         .merge(oauth::router())
         .nest_service("/driver", driver_static)
         .nest_service("/fleet", fleet_static)

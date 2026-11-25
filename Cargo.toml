@@ -52,7 +52,7 @@ webauthn-rs = { version = "0.5", features = ["danger-allow-state-serialisation"]
 jsonwebtoken = { version = "10", default-features = false, features = ["rust_crypto"] }
 bcrypt = "0.15"
 dashmap = "6"
-rand = "0.9"
+rand = "0.8"
 url = "2"
 # default-features off drops the rmcp-macros proc-macro crate: the tool
 # catalogue in fleet_portal/mcp.rs is hand-authored, no #[tool] derives.
@@ -65,6 +65,8 @@ rmcp = { version = "1.7", default-features = false, features = [
 [dev-dependencies]
 axum-test = "17"
 tempfile = "3"
+rsa = "0.9"
+rand_core = "0.6"
 
 # Dev-loop profile. On macOS the dominant cost of `cargo test` is linking each
 # test binary's symbol table + debug map (~350 MB of __LINKEDIT per binary at

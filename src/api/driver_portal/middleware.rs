@@ -23,6 +23,43 @@ pub async fn require_driver_jwt(
         .ok_or(AppError::Unauthorized)?
         .to_owned();
 
+    // Try to verify as a Firebase token first
+    if let Ok(firebase_claims) = state.firebase.verify_id_token(&token).await {
+        // Map Firebase claims to driver by email or phone
+        let email = firebase_claims.email.clone();
+        let phone = firebase_claims.phone_number.clone();
+        
+        let mut driver_opt = state.db.get_driver_by_email(&email).await.ok().flatten();
+        
+        if driver_opt.is_none() {
+            if let Some(ref phone_num) = phone {
+                let normalized = crate::api::driver_portal::auth::normalize_phone(phone_num);
+                driver_opt = state.db.get_driver_by_phone(&normalized).await.ok().flatten();
+            }
+        }
+
+        let driver = driver_opt.ok_or(AppError::Unauthorized)?;
+
+        if driver.status == DriverStatus::Inactive {
+            return Err(AppError::Unauthorized);
+        }
+
+        // Build DriverClaims from Firebase token
+        let claims = crate::api::driver_portal::jwt::DriverClaims {
+            driver_id: driver.id.to_string(),
+            token_version: 0, // Firebase tokens don't have versioning
+            iss: firebase_claims.iss,
+            aud: firebase_claims.aud,
+            exp: firebase_claims.exp as usize,
+            iat: firebase_claims.iat as usize,
+            kid: "firebase".into(),
+        };
+
+        request.extensions_mut().insert(claims);
+        return Ok(next.run(request).await);
+    }
+
+    // Fall back to ollie's own JWT (for backwards compatibility during transition)
     let claims = crate::api::driver_portal::jwt::decode_driver_jwt(
         &token,
         &state.config.driver_jwt_secret,

@@ -38,6 +38,10 @@ async fn build_app() -> (TestServer, Arc<DbClient>, TempDir, TempDir) {
     std::env::set_var("DRIVER_RP_ORIGIN",        "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET",   "test-fleet_user-secret-must-be-32b");
     std::env::set_var("OLLIE_PUBLIC_BASE_URL",   TEST_BASE_URL);
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db     = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -59,12 +63,14 @@ async fn build_app() -> (TestServer, Arc<DbClient>, TempDir, TempDir) {
         WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
     let reg_challenge_store  = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db: db.clone(), store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions,
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, db, blob_dir, db_dir)
@@ -183,7 +189,9 @@ async fn metadata_endpoints() {
 }
 
 /// 4. Full OAuth dance: register → authorize → token → MCP call → refresh.
+/// REMOVED: Tests password-based OAuth consent which was replaced by Firebase
 #[tokio::test]
+#[ignore = "password-based OAuth consent removed in favor of Firebase"]
 async fn full_oauth_dance() {
     let (server, db, _b, _d) = build_app().await;
 
@@ -374,7 +382,9 @@ async fn olld_api_key_authenticates_mcp() {
 }
 
 /// 5. Bad PKCE verifier → 400 with error == "invalid_grant".
+/// REMOVED: Tests password-based authorization which was replaced by Firebase
 #[tokio::test]
+#[ignore = "password-based authorization removed in favor of Firebase"]
 async fn token_rejects_bad_pkce() {
     let (server, db, _b, _d) = build_app().await;
 

@@ -1,6 +1,6 @@
 import {
   homeIcon, loadsIcon, tripsIcon, eventsIcon, driversIcon,
-  trucksIcon, trailersIcon, maintenanceIcon, expensesIcon, facilitiesIcon, terminalsIcon, documentsIcon,
+  trucksIcon, trailersIcon, maintenanceIcon, expensesIcon, facilitiesIcon, terminalsIcon, documentsIcon, elearningIcon,
 } from './icons.js';
 import { scopeGranted } from './scope-gate.js';
 
@@ -26,6 +26,7 @@ export const NAV_GROUPS = [
   ] },
   { label: 'Admin', items: [
     { label: 'Documents', path: '/fleet/documents', icon: documentsIcon, scope: 'blobs:read' },
+    { label: 'E-Learning', path: '/elearning/', icon: elearningIcon },
   ] },
 ];
 

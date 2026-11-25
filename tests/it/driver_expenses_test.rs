@@ -20,6 +20,11 @@ async fn setup() -> (TestServer, AppState, TempDir, TempDir) {
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", crate::integration_test::OWNER_EMAIL);
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -39,36 +44,27 @@ async fn setup() -> (TestServer, AppState, TempDir, TempDir) {
         WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions,
     };
     let server = TestServer::new(api::router(state.clone())).unwrap();
     (server, state, blob_dir, db_dir)
 }
 
-const OWNER_EMAIL: &str = "owner@example.com";
-const OWNER_PASSWORD: &str = "owner-password-123";
 
 /// First-run owner bootstrap (idempotent), returning an owner JWT.
-async fn setup_owner(server: &TestServer) -> String {
-    let resp = server.post("/fleet/setup")
-        .json(&serde_json::json!({
-            "email": OWNER_EMAIL, "name": "Owner", "password": OWNER_PASSWORD,
-        }))
-        .await;
-    if resp.status_code() == 200 {
-        return resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
-    }
-    let login = server.post("/fleet/auth/login")
-        .json(&serde_json::json!({ "email": OWNER_EMAIL, "password": OWNER_PASSWORD }))
-        .await;
-    assert_eq!(login.status_code(), 200, "owner login failed");
-    login.json::<serde_json::Value>()["token"].as_str().unwrap().to_string()
-}
+// setup_owner now provided by shared integration_test.rs module
+use crate::integration_test::{setup_owner, OWNER_EMAIL};
 
 /// Driver + truck + an assigned, dispatched, InTransit trip with two stops.
 /// Returns (driver_token, trip_id).
@@ -77,22 +73,17 @@ async fn setup_driver_with_intransit_trip_two_stops(
     state: &AppState,
 ) -> (String, String) {
     let owner_token = setup_owner(server).await;
+    let temp_id = uuid::Uuid::new_v4();
+    let driver_email = format!("expense-driver-{}@example.com", temp_id);
     let driver_id_str = server.post("/fleet/api/v1/drivers")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
-        .json(&serde_json::json!({ "name": "Expense Driver" }))
+        .json(&serde_json::json!({ 
+            "name": "Expense Driver",
+            "email": &driver_email
+        }))
         .await
         .json::<serde_json::Value>()["id"].as_str().unwrap().to_string();
     let driver_id: uuid::Uuid = driver_id_str.parse().unwrap();
-
-    let creds = ollie::models::DriverCredentials {
-        driver_id,
-        pin_hash: None,
-        token_version: 1,
-        failed_pin_attempts: 0,
-        locked_until: None,
-        updated_at: chrono::Utc::now(),
-    };
-    state.db.upsert_driver_credentials(&creds).await.unwrap();
 
     let truck_id = server.post("/fleet/api/v1/trucks")
         .add_header(header::AUTHORIZATION, format!("Bearer {owner_token}"))
@@ -125,8 +116,15 @@ async fn setup_driver_with_intransit_trip_two_stops(
     let trip_uuid: uuid::Uuid = trip_id.parse().unwrap();
     state.db.transition_trip_status(trip_uuid, ollie::models::TripStatus::InTransit).await.unwrap();
 
-    let secret = std::env::var("DRIVER_JWT_SECRET").unwrap();
-    let token = ollie::api::driver_portal::jwt::encode_driver_jwt(driver_id, 1, &secret).unwrap();
+    // Login with Firebase token
+    let fb_helper = crate::common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(&driver_email, &format!("test-driver-uid-{}", driver_id), None);
+    let login_resp = server.post("/driver/api/v1/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200, "Driver login failed");
+    let token = login_resp.json::<serde_json::Value>()["token"].as_str().unwrap().to_string();
+    
     (token, trip_id)
 }
 
@@ -376,6 +374,10 @@ async fn setup_rendezvous_pipeline() -> (TestServer, AppState, TempDir, TempDir,
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -393,12 +395,18 @@ async fn setup_rendezvous_pipeline() -> (TestServer, AppState, TempDir, TempDir,
         WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions,
     };
     let server = TestServer::new(api::router(state.clone())).unwrap();
     (server, state, blob_dir, db_dir, rx)

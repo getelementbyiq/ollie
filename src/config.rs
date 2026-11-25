@@ -37,6 +37,16 @@ pub struct Config {
     pub maintenance_interval_secs: u64,
     /// Compaction target — fragments smaller than this are compaction candidates.
     pub maintenance_target_rows_per_fragment: usize,
+    /// Firebase project ID (required for Firebase Authentication)
+    pub firebase_project_id: String,
+    /// Firebase API key (public, for frontend SDK initialization)
+    pub firebase_api_key: String,
+    /// Firebase auth domain (e.g. `project-id.firebaseapp.com`)
+    pub firebase_auth_domain: String,
+    /// Firebase app ID (for frontend SDK)
+    pub firebase_app_id: String,
+    /// Bootstrap owner email (optional, only used when no fleet users exist yet)
+    pub bootstrap_owner_email: Option<String>,
 }
 
 impl Config {
@@ -55,6 +65,18 @@ impl Config {
             .map_err(|_| "DRIVER_RP_ID is required")?;
         let driver_rp_origin = env::var("DRIVER_RP_ORIGIN")
             .map_err(|_| "DRIVER_RP_ORIGIN is required")?;
+        
+        // Firebase configuration (required)
+        let firebase_project_id = env::var("FIREBASE_PROJECT_ID")
+            .map_err(|_| "FIREBASE_PROJECT_ID is required")?;
+        let firebase_api_key = env::var("FIREBASE_API_KEY")
+            .map_err(|_| "FIREBASE_API_KEY is required")?;
+        let firebase_auth_domain = env::var("FIREBASE_AUTH_DOMAIN")
+            .map_err(|_| "FIREBASE_AUTH_DOMAIN is required")?;
+        let firebase_app_id = env::var("FIREBASE_APP_ID")
+            .map_err(|_| "FIREBASE_APP_ID is required")?;
+        let bootstrap_owner_email = env::var("OLLIE_BOOTSTRAP_OWNER_EMAIL").ok();
+        
         // NOTE: TERMINAL_TIMEZONE / OLLIE_FREE_DWELL_MINUTES are no longer read here.
         // Terminals own timezone + free-dwell; those env vars are now only first-boot
         // seed values for the Default terminal (see `open_or_create_terminal`).
@@ -113,6 +135,11 @@ impl Config {
                 .ok().and_then(|v| v.parse().ok())
                 .filter(|v| *v > 0)
                 .unwrap_or(crate::services::maintenance::DEFAULT_TARGET_ROWS_PER_FRAGMENT),
+            firebase_project_id,
+            firebase_api_key,
+            firebase_auth_domain,
+            firebase_app_id,
+            bootstrap_owner_email,
         })
     }
 }
@@ -129,6 +156,10 @@ mod tests {
         env::set_var("DRIVER_RP_ID", "localhost");
         env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
         env::set_var("FLEET_JWT_SECRET", "a-fleet_user-secret-at-least-32-bytes!!");
+        env::set_var("FIREBASE_PROJECT_ID", "test-project-123");
+        env::set_var("FIREBASE_API_KEY", "test-api-key");
+        env::set_var("FIREBASE_AUTH_DOMAIN", "test-project-123.firebaseapp.com");
+        env::set_var("FIREBASE_APP_ID", "1:123456789:web:abcdef");
     }
 
     fn remove_driver_vars() {
@@ -136,6 +167,10 @@ mod tests {
         env::remove_var("DRIVER_RP_ID");
         env::remove_var("DRIVER_RP_ORIGIN");
         env::remove_var("FLEET_JWT_SECRET");
+        env::remove_var("FIREBASE_PROJECT_ID");
+        env::remove_var("FIREBASE_API_KEY");
+        env::remove_var("FIREBASE_AUTH_DOMAIN");
+        env::remove_var("FIREBASE_APP_ID");
     }
 
     #[test]

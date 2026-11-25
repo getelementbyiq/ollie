@@ -25,6 +25,11 @@ async fn setup() -> (TestServer, TempDir, TempDir, async_channel::Receiver<ollie
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", "owner@example.com");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -42,12 +47,18 @@ async fn setup() -> (TestServer, TempDir, TempDir, async_channel::Receiver<ollie
         WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
 
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn, auth_challenge_store, reg_challenge_store,
+        firebase, elearning_sessions,
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, blob_dir, db_dir, rx)
@@ -123,13 +134,13 @@ async fn test_fleet_api_routes_still_reachable_and_not_rewritten() {
         "no-cache must stay scoped to the SPA assets, not the JSON API",
     );
 
-    // setup/status is unauthenticated and returns JSON — proves the merge order
+    // Firebase config endpoint is unauthenticated and returns JSON — proves the merge order
     // survives and the response isn't the SPA's index.html.
-    let resp = server.get("/fleet/api/v1/setup/status").await;
+    let resp = server.get("/fleet/api/v1/firebase-config").await;
     assert_eq!(resp.status_code(), 200);
     assert!(
         resp.headers().get(header::CONTENT_TYPE).unwrap().to_str().unwrap().contains("json"),
-        "/fleet/setup must return JSON, not the SPA fallback",
+        "/fleet/api/v1/firebase-config must return JSON, not the SPA fallback",
     );
 }
 

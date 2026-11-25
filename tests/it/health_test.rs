@@ -26,6 +26,11 @@ async fn setup() -> (TestServer, TempDir, TempDir, Receivers) {
     std::env::set_var("DRIVER_RP_ID", "localhost");
     std::env::set_var("DRIVER_RP_ORIGIN", "http://localhost:3000");
     std::env::set_var("FLEET_JWT_SECRET", "test-fleet_user-secret-must-be-32b");
+    std::env::set_var("FIREBASE_PROJECT_ID", "test-project");
+    std::env::set_var("FIREBASE_API_KEY", "test-api-key");
+    std::env::set_var("FIREBASE_AUTH_DOMAIN", "test-project.firebaseapp.com");
+    std::env::set_var("FIREBASE_APP_ID", "test-app-id");
+    std::env::set_var("OLLIE_BOOTSTRAP_OWNER_EMAIL", "owner@example.com");
 
     let config = Arc::new(Config::from_env().unwrap());
     let db = Arc::new(DbClient::new(db_dir.path().to_str().unwrap(), 4).await.unwrap());
@@ -41,12 +46,20 @@ async fn setup() -> (TestServer, TempDir, TempDir, Receivers) {
     let rp_origin = Url::parse("http://localhost:3000").unwrap();
     let webauthn = Arc::new(WebauthnBuilder::new("localhost", &rp_origin).unwrap().build().unwrap());
 
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
+    
+    // Seed the test server's Firebase auth with static test keys
+    let test_helper = crate::common::firebase_test::get_test_firebase_helper();
+    firebase.seed_jwks_cache_for_test(test_helper.jwks_cache()).await;
+
     let state = AppState {
         db, store, ai, geocoding, ors,
         pipeline_tx, geocoding_tx, routing_tx, config,
         webauthn,
         auth_challenge_store: Arc::new(dashmap::DashMap::new()),
+        firebase,
         reg_challenge_store: Arc::new(dashmap::DashMap::new()),
+        elearning_sessions,
     };
     let server = TestServer::new(api::router(state)).unwrap();
     (server, blob_dir, db_dir, (prx, grx, rrx))

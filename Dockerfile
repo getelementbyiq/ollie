@@ -5,7 +5,8 @@
 # runtime (glibc 2.36) doesn't have — v2.5.0 crash-looped on GLIBC_2.39
 # (pidfd_spawn, pulled in by the tesseract subprocess spawn). Keep the
 # -bookworm suffix in lockstep with the runtime FROM, or move both at once.
-FROM rust:1.91-slim-bookworm AS builder
+# Using latest stable for edition2024 support (arrow-select 58 requires Rust 1.85+)
+FROM rust:slim-bookworm AS builder
 
 RUN apt-get update && apt-get install -y pkg-config libssl-dev protobuf-compiler && rm -rf /var/lib/apt/lists/*
 

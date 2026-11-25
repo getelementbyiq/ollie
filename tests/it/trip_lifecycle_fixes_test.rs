@@ -55,6 +55,7 @@ async fn test_state() -> (AppState, TempDir, TempDir) {
             .unwrap(),
     );
     let auth_challenge_store = Arc::new(dashmap::DashMap::new());
+    let (firebase, elearning_sessions) = crate::common::test_firebase_fields();
     let reg_challenge_store = Arc::new(dashmap::DashMap::new());
     let state = AppState {
         db,
@@ -69,6 +70,8 @@ async fn test_state() -> (AppState, TempDir, TempDir) {
         webauthn,
         auth_challenge_store,
         reg_challenge_store,
+        firebase,
+        elearning_sessions,
     };
     (state, blob_dir, db_dir)
 }
