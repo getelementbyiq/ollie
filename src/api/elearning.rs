@@ -182,20 +182,20 @@ async fn serve_index() -> impl IntoResponse {
 pub fn elearning_router(state: &AppState) -> Router<AppState> {
     // Public endpoints (no auth required)
     let public = Router::new()
-        .route("/login", get(serve_login_page))
-        .route("/auth/login", axum::routing::post(elearning_login))
-        .route("/auth/logout", axum::routing::post(elearning_logout))
-        .route("/api/firebase-config", get(elearning_firebase_config));
+        .route("/elearning/login", get(serve_login_page))
+        .route("/elearning/auth/login", axum::routing::post(elearning_login))
+        .route("/elearning/auth/logout", axum::routing::post(elearning_logout))
+        .route("/elearning/api/firebase-config", get(elearning_firebase_config));
 
-    // Protected content — requires session
+    // Protected content — requires session (all three path variants)
     let protected = Router::new()
-        .route("/", get(serve_index))
-        .route("/index.html", get(serve_index))
+        .route("/elearning", get(serve_index))
+        .route("/elearning/", get(serve_index))
+        .route("/elearning/index.html", get(serve_index))
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             require_elearning_session,
         ));
 
-    Router::new()
-        .nest("/elearning", public.merge(protected))
+    public.merge(protected)
 }

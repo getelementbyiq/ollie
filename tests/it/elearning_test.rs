@@ -54,22 +54,69 @@ async fn setup() -> (TestServer, TempDir, TempDir) {
 }
 
 #[tokio::test]
-async fn test_elearning_root_without_session_redirects_or_denies() {
+async fn test_elearning_all_path_variants_without_session_redirect() {
     let (server, _blob, _db) = setup().await;
     
-    let resp = server.get("/elearning/").await;
-    let status = resp.status_code().as_u16();
+    // Test all three path variants: /elearning, /elearning/, /elearning/index.html
+    for path in ["/elearning", "/elearning/", "/elearning/index.html"] {
+        let resp = server.get(path).await;
+        let status = resp.status_code().as_u16();
+        
+        // Must return 302/303 (redirect to login), 404 (login page not found), or 401 (unauthorized)
+        // 404 is acceptable in test environment where static files may not exist
+        assert!(status == 302 || status == 303 || status == 404 || status == 401, 
+            "{path} without session returned {status}, expected 302, 303, 404, or 401");
+        
+        // If we got content, it must NOT be the guide HTML
+        let body = resp.text();
+        if status == 200 {
+            assert!(!body.contains("<html") && !body.contains("<!DOCTYPE"), 
+                "{path} without session must not serve HTML guide");
+        }
+    }
+}
+
+#[tokio::test]
+async fn test_elearning_all_path_variants_with_session_serve_content() {
+    let (server, _blob, _db) = setup().await;
     
-    // Must return 302 (redirect to login), 404 (login page not found), or 401 (unauthorized)
-    // 404 is acceptable in test environment where static files may not exist
-    assert!(status == 302 || status == 404 || status == 401, 
-        "elearning without session returned {status}, expected 302, 404, or 401");
+    // Create a fleet user and login
+    let owner = setup_owner(&server).await;
+    let test_email = "elearning-paths@example.com";
+    server.post("/fleet/api/v1/users")
+        .add_header(header::AUTHORIZATION, format!("Bearer {owner}"))
+        .json(&serde_json::json!({
+            "email": test_email,
+            "name": "Path Test User",
+            "role": "dispatcher",
+            "status": "active"
+        }))
+        .await;
     
-    // If we got content, it must NOT be the guide HTML
-    let body = resp.text();
-    if status == 200 {
-        assert!(!body.contains("<html") && !body.contains("<!DOCTYPE"), 
-            "elearning without session must not serve HTML guide");
+    let fb_helper = common::firebase_test::get_test_firebase_helper();
+    let firebase_id_token = fb_helper.sign_id_token(test_email, &format!("test-uid-{}", test_email), None);
+    
+    let login_resp = server.post("/elearning/auth/login")
+        .json(&serde_json::json!({ "id_token": firebase_id_token }))
+        .await;
+    assert_eq!(login_resp.status_code(), 200);
+    
+    let set_cookie = login_resp.headers().get(header::SET_COOKIE).unwrap().to_str().unwrap();
+    
+    // Test all three path variants with session cookie
+    for path in ["/elearning", "/elearning/", "/elearning/index.html"] {
+        let resp = server.get(path)
+            .add_header(header::COOKIE, set_cookie)
+            .await;
+        
+        let status = resp.status_code().as_u16();
+        // Should serve content (200) or not find static file (404), but NOT redirect (302)
+        assert!(status == 200 || status == 404,
+            "{path} with valid session returned {status}, expected 200 or 404 (not redirect)");
+        
+        // If redirect, that's wrong
+        assert!(status != 302,
+            "{path} with valid session must not redirect to login");
     }
 }
 
